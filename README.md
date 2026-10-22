@@ -27,4 +27,4 @@
 
 ## 배포
 
-`main` 브랜치에 push하면 Vercel이 자동으로 배포합니다. 사이트 주소(sitemap, RSS에 쓰임)는 Vercel의 `VERCEL_PROJECT_PRODUCTION_URL`을 사용하며, 커스텀 도메인을 쓰면 `SITE_URL` 환경 변수로 지정합니다.
+`main` 브랜치에 push하면 Vercel이 자동으로 배포합니다 (https://kimyoongwan.vercel.app). sitemap, RSS, 링크 미리보기에 쓰이는 사이트 주소는 `astro.config.mjs`의 기본값을 쓰며, 커스텀 도메인을 쓰면 `SITE_URL` 환경 변수로 지정합니다.

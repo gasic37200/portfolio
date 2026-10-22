@@ -4,9 +4,8 @@ import sitemap from "@astrojs/sitemap"
 import tailwind from "@astrojs/tailwind"
 import solidJs from "@astrojs/solid-js"
 
-// Vercel exposes the production domain at build time; SITE_URL overrides it (e.g. a custom domain)
-const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-const site = process.env.SITE_URL ?? (productionUrl ? `https://${productionUrl}` : "http://localhost:4321")
+// Canonical address used in the sitemap, RSS and link-preview tags; set SITE_URL to change it (e.g. a custom domain)
+const site = process.env.SITE_URL ?? "https://kimyoongwan.vercel.app"
 
 // https://astro.build/config
 export default defineConfig({
