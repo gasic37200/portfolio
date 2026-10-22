@@ -1,0 +1,47 @@
+---
+type Props = {
+  title?: string
+  problem: string
+  cause: string
+  solution: string
+  result: string
+  post?: string
+}
+
+const { title, problem, cause, solution, result, post } = Astro.props
+
+const steps = [
+  { label: "문제", text: problem, dot: "bg-rose-500", tone: "text-rose-600 dark:text-rose-400" },
+  { label: "원인", text: cause, dot: "bg-amber-500", tone: "text-amber-600 dark:text-amber-400" },
+  { label: "해결 과정", text: solution, dot: "bg-sky-500", tone: "text-sky-600 dark:text-sky-400" },
+  { label: "결과", text: result, dot: "bg-emerald-500", tone: "text-emerald-600 dark:text-emerald-400" },
+]
+---
+
+<div class="not-prose my-6 rounded-xl border border-black/15 dark:border-white/20 overflow-hidden">
+  {(title || post) && (
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3 bg-black/[0.03] dark:bg-white/5 border-b border-black/10 dark:border-white/15">
+      {title && <p class="font-semibold text-black dark:text-white">{title}</p>}
+      {post && (
+        <a href={`/blog/${post}`} class="group flex items-center gap-1 text-sm shrink-0 text-black/60 dark:text-white/60 hover:text-black hover:dark:text-white blend">
+          자세히 보기
+          <span class="translate-x-0 group-hover:translate-x-0.5 blend">→</span>
+        </a>
+      )}
+    </div>
+  )}
+  <ol class="px-5 py-4">
+    {steps.map((step) => (
+      <li class="grid grid-cols-[auto_1fr] gap-x-3 pb-4 last:pb-0 group/step">
+        <div class="flex flex-col items-center pt-1.5">
+          <span class={`size-2.5 rounded-full shrink-0 ${step.dot}`} />
+          <span class="w-px flex-1 mt-1.5 bg-black/10 dark:bg-white/15 group-last/step:hidden" />
+        </div>
+        <div>
+          <p class={`text-xs font-semibold tracking-wide ${step.tone}`}>{step.label}</p>
+          <p class="mt-0.5 text-sm leading-relaxed text-black/80 dark:text-white/80">{step.text}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>

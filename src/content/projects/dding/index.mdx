@@ -1,0 +1,84 @@
+---
+title: "DDING!"
+summary: "학교 홈페이지에 흩어진 학식 메뉴를 크롤링해 한 화면에 보여주고 메뉴별 별점을 남기는 서비스. 크롤러와 MySQL 저장, 인증 구조를 맡았습니다."
+date: "2026-01-23"
+draft: false
+tags:
+- Java
+- Spring Boot
+- Spring Security
+- JWT
+- JPA
+- MySQL
+- Thymeleaf
+- Selenium
+- 협업
+repoUrl: https://github.com/gasic37200/DDING
+troubleshooting:
+- title: "크롤러를 실행할 때마다 메뉴가 중복 저장되는 문제"
+  problem: "크롤러를 다시 실행하면 같은 메뉴가 MySQL에 또 저장됐다."
+  cause: "크롤러를 처음 다루던 시기라 수집 후 중복 여부를 판단하고 갱신하는 구조를 설계하지 못했다."
+  solution: "프로젝트 기간 안에는 매번 SQL 데이터를 지운 뒤 크롤러를 다시 실행하는 방식으로 대응했다."
+  result: "근본 해결은 못 했지만, 이 경험을 바탕으로 다음 프로젝트 Calainder에서 고정 이벤트 ID로 중복 등록을 설계 단계부터 막았다."
+  post: "crawler-duplicate-fixed-event-id"
+- title: "크롤러 수동 실행 구조의 한계"
+  problem: "학식 데이터를 갱신하려면 관리자가 직접 크롤러를 실행해야 했다."
+  cause: "스케줄러를 적용하지 못했고, 실패 시 로그나 알림을 남기는 구조도 없었다."
+  solution: "운영에 필요한 구조로 정해진 시간 자동 실행, 실패 로그, 관리자 알림을 개선 과제로 정리했다."
+  result: "크롤링은 수집뿐 아니라 실행 주기와 실패 처리까지 함께 설계해야 한다는 것을 배웠다."
+- title: "아침 학식 알림 기능의 현실적인 제약"
+  problem: "카카오톡으로 아침마다 학식 정보를 보내는 기능을 구현하지 못했다."
+  cause: "문자·메시지 발송 시스템은 비용이 들거나 기업 계정 조건이 필요했다."
+  solution: "현실적인 대안으로 이메일 기반 알림을 검토했다."
+  result: "기간 내 구현은 못 했지만, 외부 발송 채널은 비용과 계정 조건까지 기획 단계에서 확인해야 한다는 것을 배웠다."
+---
+
+> **Daily Dining Notice**
+
+## 한눈에 보기
+
+- **유형:** 학식 메뉴 조회 및 평가 서비스
+- **인원:** 협업 프로젝트
+- **역할:** 백엔드 개발, 크롤러 구현, DB 저장 및 렌더링 흐름 구성
+
+| 구분 | 기술 |
+| --- | --- |
+| Front | HTML/CSS, Thymeleaf |
+| Backend | Java, Spring Boot |
+| Security | Spring Security, JWT |
+| Database | JPA, MySQL |
+| Data Collection | Selenium |
+
+## 문제와 해결 방향
+
+> **문제:** 학식 수요는 늘었지만, 학생들은 매번 학교 홈페이지 → 학식 아이콘 → 주차 → 요일별 메뉴까지 여러 단계를 거쳐야 한다.
+>
+> **해결:** 학식 정보를 크롤러로 수집해 DB에 저장하고, 메뉴와 평가 정보를 한 페이지에서 확인하게 한다.
+
+## 내 역할과 핵심 기여
+
+- 학교 홈페이지 학식 데이터를 크롤링해 MySQL에 저장하는 흐름 구현
+- 저장된 메뉴를 Thymeleaf 페이지에 렌더링하는 백엔드 흐름 구성
+- 메뉴별 별점 시스템 구현
+- Spring Security + JWT 인증 구조와 JPA 기반 데이터 관리 구조 설계
+
+## 아키텍처
+
+**학교 홈페이지 → 크롤러 → MySQL 저장 → Spring Boot 조회 → Thymeleaf 렌더링 → 메뉴별 별점**
+
+Spring Boot MVC 패턴으로 Controller, Service, Repository의 책임을 나누고, 메뉴 데이터가 평가 데이터와 연결될 수 있도록 저장 구조를 설계했습니다.
+
+## 주요 구현
+
+1. **학식 크롤러** — 주차·요일별 메뉴를 수집해 서버에서 쓸 수 있는 형태로 정리
+2. **저장과 렌더링** — 학교 홈페이지를 탐색하지 않고도 서비스 화면에서 메뉴 확인
+3. **메뉴별 별점** — 단순 조회를 넘어 메뉴별 만족도를 확인하고 학식 선택에 참고
+4. **인증과 데이터 관리** — Spring Security + JWT 인증, JPA로 사용자·메뉴·평가 데이터 관리
+
+## 트러블슈팅
+
+<Troubleshooting items={frontmatter.troubleshooting} />
+
+## 회고
+
+완성도는 아쉬웠지만, MVC, Spring Security, JWT, JPA, MySQL, Thymeleaf, 크롤러를 함께 다루며 **데이터를 수집하고 저장하고 보여주는 서버 흐름**을 처음으로 끝까지 구현한 프로젝트입니다. 여기서 겪은 크롤러 중복 문제는 이후 Calainder에서 설계 단계부터 막을 수 있었습니다.

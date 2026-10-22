@@ -1,0 +1,99 @@
+---
+title: "Korea Score Predictor"
+summary: "매장 고객이 QR로 접속해 경기 스코어를 예측하는 이벤트 웹앱. 경기별 중복 참여 제한과 휴대폰 번호 해시·암호화를 설계해 Vercel에 배포했습니다."
+date: "2026-06-10"
+draft: false
+tags:
+- Next.js
+- TypeScript
+- Supabase
+- Tailwind
+- Vercel
+- 개인 프로젝트
+demoUrl: https://korea-score-predictor.vercel.app
+repoUrl: https://github.com/gasic37200/korea-score-predictor
+troubleshooting:
+- title: "중복 참여 기준을 이벤트 단위에서 경기 단위로 재정의"
+  problem: "첫 경기에 참여한 고객이 다음 경기에는 아예 참여할 수 없었다."
+  cause: "event_id + phone_hash로 이벤트 전체 1회 참여만 허용했지만, 실제 운영은 조별리그 1차전·2차전·16강처럼 경기마다 다시 참여하는 방식이었다."
+  solution: "participants에 match_id를 추가하고 중복 기준을 match_id + phone_hash로 변경. 애플리케이션 조회 후 DB 유니크 제약으로 한 번 더 차단하고, 예측 저장 실패 시 참여자 row를 삭제해 부분 저장을 막았다."
+  result: "같은 경기에는 한 번만, 다른 경기에는 다시 참여할 수 있도록 데이터 모델이 운영 방식과 일치하게 정리됐다."
+  post: "participation-scope-by-match"
+- title: "개인정보 보호와 당첨자 연락 사이의 균형"
+  problem: "당첨자 연락에는 원본 번호가 필요하지만, 관리자 화면에 원본이 항상 보이는 구조는 부담이 컸다."
+  cause: "중복 비교, 화면 표시, 당첨자 연락이라는 서로 다른 요구를 원본 번호 하나로 처리하려 했다."
+  solution: "비교는 HMAC SHA-256 해시, 표시는 010-****-1234 마스킹, 연락은 AES-256-GCM 암호화 저장 후 CSV export에서만 복호화하도록 분리했다."
+  result: "원본 번호가 노출되는 지점을 당첨자 CSV export 한 곳으로 줄였다."
+  post: "phone-number-privacy"
+- title: "Vercel이 Next.js 프로젝트를 감지하지 못한 문제"
+  problem: "GitHub 저장소를 Vercel에 연결했지만 Next.js 프로젝트로 인식되지 않았다."
+  cause: "원격 main 브랜치에 실제 앱 코드 없이 빈 기준 커밋만 있었다."
+  solution: "실제 앱 코드가 main에 머지되도록 정리하고, Vercel의 Framework Preset과 Build Command 설정을 확인했다."
+  result: "정상 배포 후, 배포 전 저장소 상태와 프레임워크 설정을 먼저 점검하는 습관을 갖게 됐다."
+---
+
+## 한눈에 보기
+
+- **유형:** QR 기반 매장 이벤트 MVP
+- **기간:** 2026.06
+- **인원:** 개인 프로젝트
+- **역할:** 기획, UI 구현, 서버 액션, Supabase 스키마 설계, 관리자 기능, 배포
+
+| 구분 | 기술 |
+| --- | --- |
+| Front | Next.js App Router, React, TypeScript, Tailwind CSS |
+| Backend | Next.js Server Actions |
+| Database | Supabase Postgres |
+| Privacy | HMAC SHA-256, AES-256-GCM |
+| Deploy | Vercel, GitHub |
+
+## 문제와 해결 방향
+
+> **문제:** 매장 고객은 빠르게 이벤트에 참여해야 하고, 운영자는 상대팀과 마감 시간을 자주 바꿀 수 있어야 하며, 휴대폰 번호는 안전하게 처리되어야 한다.
+>
+> **해결:** QR 진입용 모바일 폼, 관리자 경기 관리 화면, 서버 사이드 개인정보 처리, 경기별 중복 참여 제약을 하나의 MVP로 구성한다.
+
+## 내 역할과 핵심 기여
+
+- 경기별 중복 참여를 `match_id + phone_hash` 기준으로 제한하고 DB 유니크 제약으로 보장
+- 휴대폰 번호 해시·마스킹·선택적 암호화 정책을 설계해 원본 노출 지점을 CSV export 한 곳으로 축소
+- 관리자가 경기 추가, 수정, 표시/숨김, 실제 결과 입력을 직접 할 수 있는 운영 화면 구현
+- Codex + 작업 하네스로 요구사항 → 구현 → SQL migration → 검증 → 배포 확인을 반복 가능한 흐름으로 관리
+
+## 아키텍처
+
+**QR 접속 → 이벤트 폼 → Server Action 검증 → Supabase 저장 → 결과 집계 → 관리자 운영**
+
+| 경로 | 역할 |
+| --- | --- |
+| `/event` | 사용자 입력과 경기 스코어 예측 제출 |
+| `/result` | 경기별 참여자 수와 스코어 분포 |
+| `/admin/matches` | 경기 추가, 수정, 표시/숨김, 실제 결과 입력 |
+| `/admin/export` | 실제 결과와 일치한 당첨자 CSV export |
+
+민감한 로직은 Server Action과 server-only helper에서만 처리하고, service role key·해시 secret·암호화 key는 브라우저로 전달되지 않도록 했습니다. 데이터는 `events`, `matches`, `participants`, `predictions`, `score_distribution` view로 나누었습니다.
+
+## 주요 구현
+
+1. **서버 기준 제출 검증** — 클라이언트가 보낸 경기 정보를 믿지 않고, 서버가 열린 경기와 마감 시간을 다시 조회해 제출 가능 여부를 판단
+2. **부분 저장 방지** — 예측 저장에 실패하면 직전에 만든 참여자 row를 삭제
+3. **한 번에 한 경기만 노출** — 새 경기를 표시하면 같은 이벤트의 나머지 경기는 자동 숨김
+4. **모바일 UX** — 휴대폰 번호 자동 포맷, 제출 실패 시 입력값 유지, 마감 카운트다운, 마감 후 제출 버튼 비활성화
+
+## 트러블슈팅
+
+<Troubleshooting items={frontmatter.troubleshooting} />
+
+## 회고
+
+상대팀이 당일에 바뀌는 이벤트에서는 개발자가 seed를 고치는 구조가 맞지 않았습니다. 운영자가 직접 바꿀 수 있는 관리 화면을 만들면서 "실제로 운영 가능한 MVP"가 무엇인지 배웠습니다. 다음 단계로는 관리자 인증을 정식 계정 기반으로 전환하고, 실제 운영 후 참여 완료율을 분석하려고 합니다.
+
+<details>
+<summary><strong>작업 방식: Codex + 하네스</strong></summary>
+
+- `SPEC.md`, `TASKS.md`, `PRIVACY.md`, `DEPLOYMENT.md`, `PORTFOLIO.md`를 기준 문서로 두고 요구사항과 정책 변경을 추적
+- 기능 변경 시 코드, Supabase migration, TypeScript 타입, 문서를 함께 수정
+- `npm run lint`, `npm run typecheck`, `npm run build`를 반복 실행해 변경 단위 검증
+- GitHub commit과 Vercel 배포 상태를 연결해 구현이 실제 배포로 이어지는지 확인
+
+</details>

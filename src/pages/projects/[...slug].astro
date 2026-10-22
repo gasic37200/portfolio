@@ -1,0 +1,58 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
+import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import ArrowCard from "@components/ArrowCard"
+
+// Create the static projects pages
+export async function getStaticPaths() {
+	const projects = await getCollection("projects")
+	return projects.map((project) => ({
+		params: { slug: project.slug },
+		props: project,
+	}))
+}
+
+// Get the requested project
+type Props = CollectionEntry<"projects">
+const project = Astro.props
+const { title, summary } = project.data
+
+// Technical write-ups linked to this project via the post's `projects` field,
+// minus the ones a troubleshooting box on the page already links to
+const linked = new Set(project.data.troubleshooting?.map(item => item.post))
+const posts = (await getCollection("blog"))
+  .filter(post => !post.data.draft && post.data.projects?.includes(project.slug) && !linked.has(post.slug))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+---
+
+<PageLayout title={title} description={summary}>
+  <TopLayout>
+    <div class="animate">
+      <ArticleTopLayout entry={project} />
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <ArticleBottomLayout entry={project}>
+        {posts.length > 0 && (
+          <section id="tech-notes" class="my-12 space-y-4">
+            <p class="font-semibold text-black dark:text-white">
+              관련 기술 기록
+            </p>
+            <ul class="space-y-4">
+              {posts.map(post => (
+                <li>
+                  <ArrowCard entry={post} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </ArticleBottomLayout>
+    </div>
+  </BottomLayout>
+</PageLayout>

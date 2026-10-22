@@ -1,0 +1,121 @@
+---
+title: "Calainder"
+summary: "텍스트·이미지 속 일정을 AI가 분석해 Google Calendar에 자동 등록하는 서비스. 백엔드와 OCI 배포를 맡아 calainder.kr로 운영 중입니다."
+date: "2025-12-17"
+draft: false
+tags:
+- Java
+- Spring Boot
+- Python
+- FastAPI
+- OpenAI API
+- Google OAuth2
+- Playwright
+- Docker
+- OCI
+- 협업
+demoUrl: https://calainder.kr
+repoUrl: https://github.com/gasic37200/Calainder
+troubleshooting:
+- title: "크롤링한 과제 일정이 캘린더에 중복 등록되는 문제"
+  problem: "과제 일정 업데이트를 누를 때마다 같은 과제가 Google Calendar에 다시 등록될 수 있었다."
+  cause: "크롤링 결과를 매번 새 이벤트로 생성해, 이미 등록된 일정인지 판단할 기준이 없었다. 앞선 DDING!에서도 같은 원인으로 매번 데이터를 지우고 다시 실행해야 했다."
+  solution: "과목(sub) + 과제 제목(title)으로 고정 이벤트 ID를 만들고, 같은 ID의 이벤트가 있으면 수정, 없으면 새로 등록하도록 바꿨다."
+  result: "크롤링을 반복해도 과제 하나당 일정 하나만 남는다. release/v1.4.0에 반영."
+  post: "crawler-duplicate-fixed-event-id"
+- title: "\"50분 뒤\" 같은 상대시간을 AI가 잘못 해석하는 문제"
+  problem: "날짜가 명시된 입력은 잘 처리됐지만, 상대시간 표현은 엉뚱한 날짜·시간으로 등록되는 경우가 있었다."
+  cause: "프롬프트가 기능마다 흩어져 있었고, AI가 계산의 기준으로 삼을 현재 시각이 명확하지 않았다."
+  solution: "공통 프롬프트를 분리하고 KST 기준 현재 시각을 명시했다. 종료 날짜 계산 규칙과 재검산 규칙을 구체적인 예시와 함께 강화했다."
+  result: "상대시간 해석이 안정화됐고, LLM 기능은 프롬프트 설계와 검증이 곧 품질이라는 것을 배웠다."
+  post: "llm-relative-time"
+- title: "OCI 서버 하나에 서비스 3개 배포"
+  problem: "설정 하나만 빠져도 서비스가 뜨지 않았고, 인스턴스 재시작 후에는 도메인 연결이 끊겼다."
+  cause: "Dockerfile, compose, 환경변수, 보안 그룹, Nginx, HTTPS, DNS가 모두 맞물려 있었고, 재시작 시 공인 IP가 바뀌었다."
+  solution: "서비스별 Docker Compose와 .env 분리, 모듈별 .dockerignore 추가, DNS·방화벽·Nginx 리버스 프록시·HTTPS를 직접 구성했다."
+  result: "Calainder, Teammate, feedback-api를 한 서버에서 컨테이너로 분리해 운영 중이다."
+  post: "oci-docker-compose-deploy"
+- title: "Google OAuth 민감 범위 검증"
+  problem: "Google Calendar 권한을 쓰려면 로그인 기능만으로는 검증을 통과할 수 없었다."
+  cause: "요청하는 데이터 범위가 민감할수록 Google이 서비스의 신뢰성까지 함께 검토한다."
+  solution: "OAuth 동의 화면, 홈페이지 URL, 개인정보처리방침·이용약관 링크, 민감 범위 사용 사유, 데모 영상을 준비했다."
+  result: "외부 연동은 기능뿐 아니라 '왜 이 권한이 필요한가'까지 설계해야 한다는 것을 체감했다."
+---
+
+> **Record Less, Remember More** — **Cal**endar + **AI** + Remi**nder**
+
+## 한눈에 보기
+
+- **기간:** 2025.09 ~ 2025.12 (2026.05 ~ 보완 개발)
+- **인원:** 2인
+- **역할:** 기획 총괄, 백엔드 개발, 서버 구조 설계
+- **배포:** OCI + Docker Compose + Nginx + HTTPS 운영 중
+
+| 구분 | 기술 |
+| --- | --- |
+| Front | HTML/CSS, JavaScript |
+| Backend | Java, Spring Boot, Spring Security |
+| AI Module | Python, FastAPI, OpenAI API |
+| External API | Google OAuth2, Google Calendar API |
+| Data Collection | Playwright |
+| Deploy | Docker Compose, OCI, Nginx |
+
+## 문제와 해결 방향
+
+> **문제:** 일정 정보는 메신저, 공지사항, 이미지 캡처처럼 흩어져 있는데, 이를 다시 정리해 캘린더에 입력하는 과정이 번거롭고 반복적이다.
+>
+> **해결:** 비정형 입력을 AI가 분석하고, 사용자가 이미 쓰는 Google Calendar에 자동으로 반영한다.
+
+## 내 역할과 핵심 기여
+
+- 텍스트·이미지 → AI 분석 → Google Calendar 등록까지 이어지는 **서버 흐름 전체** 설계 및 구현
+- Google OAuth2 인증과 Google Calendar 이벤트 CRUD 연동
+- E-Class 크롤러 연동 구조 설계, 로그인 정보는 AES 암호화 후 전달
+- OCI, Docker Compose, 도메인, Nginx, HTTPS 기반 운영 환경 직접 구축
+- 프로젝트 종료 후 release 브랜치로 `v1.0.0` ~ `v1.5.2`까지 버전을 나눠 보완
+
+## 아키텍처
+
+**사용자 입력 → Spring Boot 서버 → AI 분석 또는 E-Class 크롤링 → Google Calendar 반영 → 결과 반환**
+
+- 일정의 최종 저장소를 내부 DB가 아닌 **Google Calendar**로 두어, Controller-Service-DTO/Util 구조로 현재 요구사항에 맞게 단순화
+- AI 모듈과 크롤러 모듈은 별도 서비스로 분리하고 REST API로 호출
+- 외부 호출이 길어질 수 있어 AI 분석·크롤링 요청에 비동기 처리를 적용하고, 큐 기반 구조로의 확장을 고려
+
+## 주요 구현
+
+1. **AI 일정 분석 및 자동 등록** — AI 모듈이 반환한 제목·날짜·시간을 Google Calendar 이벤트로 변환. 한 문장에 여러 일정이 있으면 배열로 받아 여러 카드로 분리
+2. **일정 데이터 변환** — 날짜만 있는 일정과 시간이 있는 일정을 모두 처리하고, 등록과 수정에 같은 구조를 재사용
+3. **E-Class 일정 수집** — 암호화된 로그인 정보로 크롤러를 호출하고, 고정 이벤트 ID로 중복 등록 방지
+4. **반복 일정과 리마인더** — 매일·매주·매달 반복 일정, 알림 설정을 Google Calendar 알림 옵션과 연결
+
+## 트러블슈팅
+
+<Troubleshooting items={frontmatter.troubleshooting} />
+
+## 회고
+
+팀 프로젝트 당시에는 Git을 협업 도구로 충분히 활용하지 못했습니다. 프로젝트가 끝난 뒤 혼자 보완하면서 release/main 브랜치 분리, PR 반영, cherry-pick과 amend로 버전 이력을 관리하는 방법을 익혔고, 배포 역시 코드·인프라·네트워크·보안 설정이 함께 맞물려야 완성된다는 것을 직접 경험했습니다. 또 모바일 키보드 노출에 따른 viewport 변화와 인앱 브라우저의 Google 로그인 제한을 겪으며, 웹 서비스는 실제 사용 환경별 렌더링 특성까지 고려해야 한다는 점을 확인했습니다.
+
+<details>
+<summary><strong>기획 자료: 요구사항, 유스케이스, 화면 설계</strong></summary>
+
+**핵심 요구사항**
+
+- 텍스트, 대화 내용, 이미지 같은 비정형 입력만으로 일정을 등록할 수 있어야 한다.
+- 입력에서 제목, 날짜, 시간을 자동으로 추출해야 한다.
+- 추출된 일정은 Google Calendar와 연동되어 자동 등록·동기화되어야 한다.
+- E-Class 같은 외부 서비스의 과제 일정도 수집해 반영할 수 있어야 한다.
+
+**유스케이스**
+
+- **UC-01** 일정 업로드 및 등록
+- **UC-02** 등록 일정 확인 및 관리
+- **UC-03** 과제 일정 업데이트 (E-Class)
+- **UC-04** 알림 기능 (확장)
+
+**화면 설계의 방향 전환**
+
+초기에는 자체 캘린더 UI를 기획했지만, AI에게 자연스럽게 일정을 요청하는 흐름이 핵심 가치에 더 맞다고 판단해 **채팅형 입력 중심 UI**로 바꿨습니다. 분석 결과는 카드로 보여주고, 실제 일정 확인·관리는 이동 버튼으로 Google Calendar에 연결했습니다.
+
+</details>

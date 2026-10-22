@@ -1,0 +1,60 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
+import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import ArrowCard from "@components/ArrowCard"
+import TroubleshootingBox from "@components/TroubleshootingBox.astro"
+
+// Create the static blog pages
+export async function getStaticPaths() {
+	const posts = await getCollection("blog")
+	return posts.map((post) => ({
+		params: { slug: post.slug },
+		props: post,
+	}))
+}
+
+// Get the requested post
+type Props = CollectionEntry<"blog">
+const post = Astro.props
+const { title, summary } = post.data
+
+const related = (await getCollection("projects"))
+  .filter(p => post.data.projects?.includes(p.slug))
+---
+
+<PageLayout title={title} description={summary}>
+  <TopLayout>
+    <div class="animate">
+      <ArticleTopLayout entry={post}/>
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <ArticleBottomLayout entry={post}>
+        {post.data.troubleshooting && (
+          <div slot="before" class="mb-10">
+            <TroubleshootingBox title="한눈에 보기" {...post.data.troubleshooting} />
+          </div>
+        )}
+        {related.length > 0 && (
+          <section class="my-12 space-y-4">
+            <p class="font-semibold text-black dark:text-white">
+              관련 프로젝트
+            </p>
+            <ul class="space-y-4">
+              {related.map(project => (
+                <li>
+                  <ArrowCard entry={project} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </ArticleBottomLayout>
+    </div>
+  </BottomLayout>
+</PageLayout>

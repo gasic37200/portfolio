@@ -1,0 +1,19 @@
+---
+import TroubleshootingBox from "@components/TroubleshootingBox.astro"
+
+// Used inside project .mdx files as <Troubleshooting items={frontmatter.troubleshooting} />
+type Props = {
+  items?: {
+    title: string
+    problem: string
+    cause: string
+    solution: string
+    result: string
+    post?: string
+  }[]
+}
+
+const { items = [] } = Astro.props
+---
+
+{items.map((item) => <TroubleshootingBox {...item} />)}
