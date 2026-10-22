@@ -10,7 +10,7 @@ export const SITE: Site = {
 // Work Page
 export const WORK: Page = {
   TITLE: "이력",
-  DESCRIPTION: "학력, 자격증, 수상, 봉사 이력입니다.",
+  DESCRIPTION: "학력, 병역, 자격증, 수상, 봉사 이력입니다.",
 }
 
 // Blog Page
