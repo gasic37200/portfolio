@@ -25,6 +25,12 @@ export const PROJECTS: Page = {
   DESCRIPTION: "직접 기획하고 구현하고 배포한 프로젝트입니다.",
 }
 
+// Posts Page (free-form blog)
+export const POSTS: Page = {
+  TITLE: "블로그",
+  DESCRIPTION: "개발하며 해 본 생각과 고찰을 적습니다.",
+}
+
 // Search Page
 export const SEARCH: Page = {
   TITLE: "Search",
@@ -48,6 +54,10 @@ export const LINKS: Links = [
   {
     TEXT: "기술 기록",
     HREF: "/blog",
+  },
+  {
+    TEXT: "블로그",
+    HREF: "/posts",
   },
 ]
 

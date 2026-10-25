@@ -1,32 +1,36 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content"
 import Troubleshooting from "@components/Troubleshooting.astro"
+import TableOfContents from "@components/TableOfContents.astro"
+import { isPublished } from "@lib/utils"
 
 type Props = {
-  entry: CollectionEntry<"blog"> | CollectionEntry<"projects">
+  entry: CollectionEntry<"blog"> | CollectionEntry<"posts"> | CollectionEntry<"projects">
 }
 
 // Get the requested entry
 const { entry } = Astro.props
 const { collection } = entry
-const { Content } = await entry.render()
+const { Content, headings } = await entry.render()
 
 // Get the next and prev entries (modulo to wrap index)
 const items = (await getCollection(collection))
-  .filter(post => !post.data.draft)
+  .filter(isPublished)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+const showNav = items.length > 1
 const index = items.findIndex(x => x.slug === entry.slug)
 const prev = items[(index - 1 + items.length) % items.length]
 const next = items[(index + 1) % items.length]
 ---
 
-<div>
+<div class="relative">
+  <TableOfContents headings={headings}/>
   <slot name="before"/>
   <article>
     <Content components={{ Troubleshooting }}/>
   </article>
   <slot/>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div class:list={["grid grid-cols-1 sm:grid-cols-2 gap-4", !showNav && "hidden"]}>
     <a href={`/${prev.collection}/${prev.slug}`} class="group p-4 gap-3 flex items-center border rounded-lg hover:bg-black/5 hover:dark:bg-white/10 border-black/15 dark:border-white/20 blend">
       <div class="order-2 w-full h-full group-hover:text-black group-hover:dark:text-white blend">
         <div class="flex flex-wrap gap-2">

@@ -80,6 +80,17 @@ troubleshooting:
 - 본문: `## 상황` → `## 원인` (또는 원인을 좁혀간 과정) → `## 해결` → `## 배운 점` (`~다` 체 bullet).
 - `projects`에 적은 프로젝트 페이지에 글이 자동 연결되고, 글 하단에 관련 프로젝트 카드가 붙는다.
 
+## 블로그 (임시 글)
+
+프로젝트와 묶이지 않는 생각·고찰은 `src/content/posts/<slug>/index.md`의 **블로그**(`/posts`)에 쓴다. 기술 기록(`/blog`)과 다르게 형식이 자유롭고 트러블슈팅 박스나 `projects` 연결이 없다.
+
+- frontmatter: `title`, `summary`, `date`, `tags`, `draft`.
+- `draft: true`는 임시 글이다. `npm run dev`에서만 "임시 글" 표시와 함께 보이고, 빌드(실제 사이트)·검색·RSS에서는 빠진다. 공개는 `draft` 줄을 지우는 것.
+- 저장소가 공개라 임시 글은 **git에도 올리지 않는다.** 글 폴더와 그림 폴더(`public/images/posts/<slug>/`)를 `.gitignore`의 "unpublished blog drafts" 아래에 추가해 이 PC에만 둔다. 공개할 때 그 줄을 지우고 `draft` 줄도 지운 뒤 커밋한다. 그래서 클라우드 세션에서는 임시 글을 볼 수 없다.
+- 지금 임시 글: `session-orchestration-1`, `session-orchestration-2` (시리즈, 그림은 `public/images/posts/session-orchestration/`). 1편을 먼저 공개한다.
+- 사용자는 블로그를 처음 쓴다. 초안을 잡을 때는 대화에서 나온 사실과 사용자의 생각만 쓰고, 직접 경험이 필요한 자리는 `- [ ]` 체크 항목으로 비워 둔다. 맨 위 HTML 주석에 작성 메모를 남긴다.
+- 사용자의 의견을 대신 결론 내리지 않는다. 결론·소감 섹션은 비워 둔다.
+
 ## 이력 항목
 
 `src/content/work/<slug>.md` 하나가 이력 페이지 한 줄이다. 최신 `dateStart` 순으로 정렬된다.

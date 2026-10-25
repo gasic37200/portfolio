@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Drafts are previewable in `astro dev` and left out of production builds
+export function isPublished(entry: { data: { draft?: boolean } }) {
+  return import.meta.env.DEV || !entry.data.draft
+}
+
+export const COLLECTION_LABELS: Record<string, string> = {
+  projects: "프로젝트",
+  blog: "기술 기록",
+  posts: "블로그",
+}
+
 export function formatDate(date: Date) {
   return Intl.DateTimeFormat("ko-KR", {
     month: "long",

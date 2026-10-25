@@ -1,0 +1,41 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
+import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import { isPublished } from "@lib/utils"
+
+// Create the static post pages (drafts only in dev)
+export async function getStaticPaths() {
+	const posts = (await getCollection("posts")).filter(isPublished)
+	return posts.map((post) => ({
+		params: { slug: post.slug },
+		props: post,
+	}))
+}
+
+type Props = CollectionEntry<"posts">
+const post = Astro.props
+const { title, summary, draft } = post.data
+---
+
+<PageLayout title={title} description={summary}>
+  <TopLayout>
+    <div class="animate">
+      <ArticleTopLayout entry={post}/>
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <ArticleBottomLayout entry={post}>
+        {draft && (
+          <div slot="before" class="mb-8 px-4 py-3 rounded-lg text-sm bg-amber-500/10 text-amber-800 dark:text-amber-200 border border-amber-500/30">
+            임시 글입니다. 로컬 개발 서버에서만 보이고, 실제 사이트에는 올라가지 않습니다. 공개하려면 frontmatter의 <code>draft: true</code>를 지우세요.
+          </div>
+        )}
+      </ArticleBottomLayout>
+    </div>
+  </BottomLayout>
+</PageLayout>

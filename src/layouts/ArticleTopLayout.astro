@@ -1,9 +1,9 @@
 ---
 import type { CollectionEntry } from "astro:content"
-import { formatDate, readingTime } from "@lib/utils"
+import { COLLECTION_LABELS, formatDate, readingTime } from "@lib/utils"
 
 type Props = {
-  entry: CollectionEntry<"projects"> | CollectionEntry<"blog">
+  entry: CollectionEntry<"projects"> | CollectionEntry<"blog"> | CollectionEntry<"posts">
 }
 
 const { entry } = Astro.props
@@ -21,7 +21,7 @@ const repoUrl = collection === "projects" ? data.repoUrl : null
       <polyline points="12 19 5 12 12 5" class="translate-x-1 group-hover:translate-x-0 transition-all duration-300 ease-in-out" />
     </svg>
     <div class="w-full group-hover:text-black group-hover:dark:text-white transition-colors duration-300 ease-in-out">
-      {collection === "projects" ? "프로젝트 목록" : "기술 기록 목록"}
+      {COLLECTION_LABELS[collection]} 목록
     </div>
   </a>
   <div class="flex flex-wrap text-sm uppercase mt-12 gap-3 opacity-75">

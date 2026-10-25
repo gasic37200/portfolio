@@ -1,8 +1,8 @@
-import { formatDate, truncateText } from "@lib/utils"
+import { COLLECTION_LABELS, formatDate, truncateText } from "@lib/utils"
 import type { CollectionEntry } from "astro:content"
 
 type Props = {
-  entry: CollectionEntry<"blog"> | CollectionEntry<"projects">
+  entry: CollectionEntry<"blog"> | CollectionEntry<"posts"> | CollectionEntry<"projects">
   pill?: boolean
 }
 
@@ -13,7 +13,12 @@ export default function ArrowCard({ entry, pill }: Props) {
         <div class="flex flex-wrap items-center gap-2">
           {pill &&
             <div class="text-sm capitalize px-2 py-0.5 rounded-full border border-black/15 dark:border-white/25">
-              {entry.collection === "blog" ? "기술 기록" : "프로젝트"}
+              {COLLECTION_LABELS[entry.collection]}
+            </div>
+          }
+          {entry.data.draft &&
+            <div class="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300">
+              임시 글
             </div>
           }
           <div class="text-sm uppercase">
