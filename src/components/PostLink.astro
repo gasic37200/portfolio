@@ -1,0 +1,25 @@
+---
+import { getCollection } from "astro:content"
+import { isPublished } from "@lib/utils"
+
+// Links to a blog post only once it is published, so public pages never point at a draft:
+// <PostLink slug="session-orchestration-1">이 방식에 대한 고찰</PostLink>
+type Props = {
+  slug: string
+}
+
+const { slug } = Astro.props
+const post = (await getCollection("posts")).find((p) => p.slug === slug)
+const visible = post && isPublished(post)
+---
+
+{visible && (
+  <a href={`/posts/${slug}`} class="not-prose group my-6 flex items-center justify-between gap-4 rounded-xl border border-black/15 dark:border-white/20 px-5 py-4 hover:bg-black/5 hover:dark:bg-white/10 blend">
+    <span>
+      <span class="block text-xs text-black/50 dark:text-white/50">블로그</span>
+      <span class="block font-semibold text-black dark:text-white">{post.data.title}</span>
+      <span class="mt-1 block text-sm text-black/70 dark:text-white/70"><slot /></span>
+    </span>
+    <span class="shrink-0 text-black/50 dark:text-white/50 group-hover:translate-x-0.5 blend">→</span>
+  </a>
+)}

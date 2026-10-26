@@ -4,6 +4,7 @@ import Troubleshooting from "@components/Troubleshooting.astro"
 import TableOfContents from "@components/TableOfContents.astro"
 import YouTube from "@components/YouTube.astro"
 import Planning from "@components/Planning.astro"
+import PostLink from "@components/PostLink.astro"
 import { isPublished } from "@lib/utils"
 
 type Props = {
@@ -29,7 +30,7 @@ const next = items[(index + 1) % items.length]
   <TableOfContents headings={headings}/>
   <slot name="before"/>
   <article>
-    <Content components={{ Troubleshooting, YouTube, Planning }}/>
+    <Content components={{ Troubleshooting, YouTube, Planning, PostLink }}/>
   </article>
   <slot/>
   <div class:list={["grid grid-cols-1 sm:grid-cols-2 gap-4", !showNav && "hidden"]}>
