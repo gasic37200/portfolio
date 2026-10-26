@@ -71,6 +71,25 @@ article {
   @apply prose dark:prose-invert max-w-full pb-12;
 }
 
+/* Tables in articles: visible cell borders and a shaded header so columns read apart */
+article table {
+  @apply w-full border-collapse text-sm;
+}
+
+article thead th {
+  @apply bg-black/[0.04] dark:bg-white/[0.06] text-black dark:text-white font-semibold;
+}
+
+article th,
+article td {
+  @apply border border-black/15 dark:border-white/20 px-3 py-2 align-top;
+}
+
+article th:first-child,
+article td:first-child {
+  @apply min-w-[7rem];
+}
+
 .page-heading {
   @apply font-semibold text-black dark:text-white;
 }

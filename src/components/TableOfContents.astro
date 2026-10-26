@@ -27,7 +27,7 @@ const items = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3)
 
     <!-- xl and up: a column beside the article (the parent must be `relative`); the nav sticks while scrolling.
          sticky instead of fixed, because the page's .animate wrapper has a transform that breaks fixed positioning. -->
-    <aside class="hidden xl:block absolute top-0 bottom-0 left-full ml-10 w-60">
+    <aside class="hidden xl:block absolute top-0 bottom-0 left-full ml-8 w-52">
       <nav aria-label="목차" class="not-prose sticky top-28 max-h-[calc(100vh-9rem)] overflow-y-auto text-sm">
         <p class="mb-3 text-xs font-semibold tracking-wide text-black/50 dark:text-white/50">목차</p>
         <ol class="space-y-1.5 border-l border-black/10 dark:border-white/15">
