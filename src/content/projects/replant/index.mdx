@@ -18,26 +18,31 @@ demoUrl: https://replant.kro.kr
 repoUrl: https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE
 troubleshooting:
 - title: "결제가 롤백돼도 택배 예약만 남는 문제"
-  problem: "결제 트랜잭션 안에서 택배사 예약 API를 호출해, 결제가 롤백돼도 택배사에는 예약이 남았다."
+  problem: "처음 구현(#103)은 결제 트랜잭션 안에서 택배사 예약 API를 호출했다. 결제가 뒤 단계에서 롤백되면 택배사에는 예약만 남고, 택배사 응답(최대 5초)을 기다리는 동안 결제 트랜잭션도 열려 있었다."
   cause: "외부 API 호출은 DB 트랜잭션의 롤백 대상이 아닌데, 호출이 트랜잭션 경계 안에 있었다."
-  solution: "결제와 함께 배송 행(READY 상태 + 멱등키)만 커밋하고, 택배사 예약은 커밋 후 트랜잭션 밖에서 호출했다(#129). 예약에 실패한 건은 READY로 남기고 5분 스케줄러가 같은 멱등키로 재예약한다(#149)."
-  result: "결제와 택배 예약이 어긋나지 않게 됐다. 남은 한계: 택배사 지연 카오스 테스트로 측정해 보니, 커밋 후 호출이 같은 요청 스레드에서 돌아 결제 응답이 배송 1건당 최대 8초(연결 3초 + 응답 5초)씩 늦어졌다. 택배 예약 비동기 전환과 서킷 브레이커를 다음 개선으로 정했다."
+  solution: "배송 생성을 두 단계로 나눴다. 결제 트랜잭션에서는 배송 행(READY + 멱등키)만 저장하고, 택배사 예약은 커밋 후 콜백에서 호출한다(#129). 첫 시도에서는 콜백 안의 저장이 커밋되지 않았는데, Testcontainers PostgreSQL 통합 테스트로 이를 발견하고 PROPAGATION_NOT_SUPPORTED로 트랜잭션을 떼어 save()마다 커밋되게 했다. 예약에 실패한 건은 5분마다 1분 넘은 READY 배송을 같은 멱등키로 재예약한다(#149)."
+  result: "통합 테스트로 '커밋 전에는 택배사를 부르지 않고 커밋 후 BOOKED·송장 저장', '롤백되면 배송 행도 택배사 호출도 없음', '판매자 주소 조회가 실패해도 READY로 남음'을 고정했고, 기존 실제 결제 흐름 테스트는 코드 변경 없이 통과했다(전체 392개). 남은 한계: 택배사 지연 카오스 테스트에서 결제 응답이 배송 1건당 최대 8초(연결 3초 + 응답 5초) 늦어져, 비동기 전환과 서킷 브레이커를 다음 과제로 정했다."
   post: "payment-commit-then-courier"
 - title: "재예약 스케줄러가 주문 취소를 덮어쓰는 문제 (Lost Update)"
-  problem: "재예약 스케줄러가 배송을 읽은 사이 주문이 취소되면, 재예약이 취소를 덮어써 취소된 주문이 배송될 수 있었다."
-  cause: "두 작업이 같은 배송 행을 각자 읽고, 판단하고, 저장했다 (Lost Update)."
-  solution: "배송에 @Version 낙관적 락을 적용해 늦게 저장하는 쪽이 실패하게 했다. 택배사에 남은 예약은 같은 멱등키로 찾아 취소하고, 택배사 취소 실패는 5분마다 재시도하며, 이미 수거된 건은 취소할 수 없게 막았다(#168)."
-  result: "@Version을 빼면 경합 테스트가 실패하는 것까지 확인해, 락이 실제로 경합을 막는다는 것을 테스트로 고정했다."
-- title: "웹훅 중복·순서 뒤바뀜·누락"
-  problem: "택배사가 보내는 배송 상태 웹훅이 중복되거나, 순서가 바뀌거나, 중간 단계가 빠질 수 있었다."
-  cause: "네트워크 재전송으로 같은 상태가 다시 오거나, 늦게 보낸 요청이 먼저 도착할 수 있다."
-  solution: "상태 순서상 앞으로 가는 변경만 반영하고, 별도 테이블 없이 도메인 규칙으로 멱등 처리했다. 중복·역순은 200으로 무시하고 재시도가 필요할 때만 5xx로 응답한다(#123). 수거(PICKED_UP) 웹훅이 빠져도 다음 단계 웹훅이 처음 반영될 때 택배비 정산 이벤트를 한 번 발행한다(#151)."
-  result: "웹훅 순서나 중복과 관계없이 배송 상태가 일관되게 반영된다. 남은 한계: 서버가 택배사 상태를 직접 조회해 맞추는 스케줄러는 없어, 운영 대응 절차로 정리했다."
-- title: "배포 스크립트가 실행 위치에 따라 실패하는 문제"
-  problem: "deploy.sh를 ~/replant 폴더 안에서 실행하면 git clone이 실패했다."
-  cause: "스크립트가 현재 폴더를 지운 뒤 clone 하면서 작업 위치가 사라졌다."
-  solution: "스크립트 시작에서 홈 디렉터리로 이동하도록 고쳤다. 같은 PR에서 운영 Nginx에 SSE 전용 설정(버퍼링 끔, HTTP/1.1, 읽기 타임아웃 1시간)을 추가했다(#209)."
-  result: "실행 위치와 관계없이 배포되고, 운영 환경에서 SSE 알림 연결이 유지된다."
+  problem: "재예약 스케줄러가 택배사 응답을 기다리는 사이 주문 취소가 먼저 저장되면, 재예약이 BOOKED로 덮어써 취소가 사라지고 택배가 그대로 수거될 수 있었다."
+  cause: "두 작업이 같은 배송 행을 각자 읽고, 판단하고, 저장했다."
+  solution: "배송에 @Version 낙관적 락을 걸어 늦게 저장하는 쪽을 실패시켰다. 외부 API를 기다리는 동안 DB 락을 잡지 않으려고 비관적 락 대신 골랐다. 택배사에 남은 예약은 취소 쪽이 같은 멱등키로 다시 불러 송장을 받은 뒤 취소하고, 택배사 취소 응답은 200 취소·404 없음·409 이미 수거(재시도 안 함)·5xx 재시도로 나눠 실패한 취소를 5분마다 다시 보낸다(#168)."
+  result: "Testcontainers 통합 테스트 9개로 '커밋 후에만 택배사 취소 호출', '주문 롤백 시 미호출', '중복 취소에도 한 번만 호출', '수거 이후 취소 거부', '실패 후 스케줄러 재시도', '409는 재시도 안 함'을 고정했다. 경합 테스트는 @Version을 빼면 실패하는 것까지 확인해 락이 실제로 경합을 막는다는 것을 보였다(전체 466개 통과)."
+- title: "웹훅 중복·순서 뒤바뀜과 잘못된 응답 코드"
+  problem: "택배사 웹훅은 중복되거나 순서가 바뀌거나 중간 단계가 빠질 수 있었다. 처음에는 모르는 주문번호에 500을 돌려줘 택배사가 같은 이벤트를 계속 다시 보냈고, 키 검사에서 예외가 빠져 틀린 키도 통과했다."
+  cause: "택배사가 5xx면 재전송하고 4xx면 포기한다는 계약을 생각하지 않고, 예외로 흐름을 처리했다."
+  solution: "상태는 앞으로만 반영하는 도메인 규칙 하나로 중복과 역순을 걸렀다(eventId 테이블 없이). 다시 보내도 결과가 같은 경우는 로그 후 200, 키 오류는 401로 막고 서버 키가 비어 있어도 닫히게 했다(#123). 수거 웹훅이 빠져도 다음 단계가 처음 반영될 때 택배비 정산 이벤트를 한 번만 발행한다(#151)."
+  result: "테스트로 '같은 상태 재수신·순서 뒤바뀜 무시', '키 맞음 200, 틀림·없음·서버 미설정 401, 401이면 서비스 미호출', '중복 웹훅에도 정산 이벤트 1번, 커밋 후에만 발행'을 고정했다. 404-express 컨테이너로 예약 후 웹훅 3건을 받아 READY → PICKED_UP → IN_TRANSIT → DELIVERED까지 DB에 반영되는 것을 E2E로 확인했다."
+- title: "SSE 알림을 보낼 때 인증된 연결도 401·403으로 막히는 문제"
+  problem: "로그인한 회원의 SSE 연결로 알림을 보내는 순간 401·403이 났다."
+  cause: "SSE 응답은 서블릿 비동기 디스패치로 나가는데, JWT 필터(OncePerRequestFilter)는 비동기 디스패치에서 다시 돌지 않아 인증 정보가 비어 있고, anyRequest().authenticated()에 막혔다."
+  solution: "비동기 디스패치는 처음 요청이 인증을 통과한 뒤에만 생기므로 DispatcherType.ASYNC만 허용했다. 서버는 안 읽은 알림 수만 보내고, X-Accel-Buffering: no와 30초 ping으로 프록시가 응답을 모아 두거나 조용한 연결을 끊지 않게 했다(#177). 운영 Nginx에는 SSE 경로에만 HTTP/1.1·버퍼링 끔·1시간 타임아웃을 줬다(#209)."
+  result: "테스트 9개로 '연결 즉시 현재 수 전송', '탭 두 개 모두 수신·다른 회원 미수신', '끊긴 연결 제거', '알림 저장·읽음이 커밋된 뒤에만 전송'을 고정했다(전체 521개 통과). 운영 반영 전 nginx -t로 설정을 검사했다."
+- title: "첫 운영 배포에서 앱이 뜨지 않는 문제 (Kafka 헬스 체크)"
+  problem: "첫 배포에서 Kafka가 unhealthy로 표시돼 Spring 앱이 기동되지 않았다. Kafka 자체는 정상이었다(OOM 없음, 재시작 0회)."
+  cause: "헬스 체크가 10초마다 kafka-topics.sh로 JVM을 새로 띄웠는데, 서버에서 이미지를 빌드하느라 CPU 크레딧이 바닥나 10초를 넘겼다. depends_on: service_healthy 때문에 앱은 계속 기다렸다."
+  solution: "헬스 체크를 포트 확인(bash /dev/tcp)으로 바꿨다. 같은 배포에서 새 환경변수(PAYMENT_KEY_ENCRYPTION_KEY) 누락으로 기동이 실패한 것도 겪어, 배포 스크립트가 .env.example과 서버 .env를 비교해 빠진 변수가 있으면 멈추게 했다(#185)."
+  result: "헬스 체크가 약 0.3초로 줄었다(임시 Kafka 컨테이너에서 기동 전 실패, 기동 후 성공 확인). 누락 변수 검사는 키를 뺀 .env에서 검출되는 것을 확인했고, 배포 후 운영 health UP과 품종 217개 조회까지 확인했다."
 ---
 
 > **식물 C2C 마켓** — 일단커밋(JustCommit), 프로그래머스 데브코스 6팀
@@ -265,6 +270,22 @@ troubleshooting:
 
 </details>
 
+## 테스트와 검증
+
+기능마다 PR 본문에 테스트와 확인 방법을 함께 남겼습니다. 팀 전체 테스트는 웹훅 PR 시점 370개에서 SSE PR 시점 521개로 늘었고, 모듈 경계 검사(Spring Modulith `verify()`)도 매번 함께 돌았습니다.
+
+| PR | 추가한 테스트 | 확인한 것 |
+| --- | --- | --- |
+| 배송 생성·예약 [#103](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/103) | 단위 5개, WireMock 2개 | 상태 전이, 중복 예약 방지, 주문번호 형식, 택배사 500은 재시도 가능한 실패로 분류 |
+| 웹훅 수신 [#123](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/123) | 단위 4개, 컨트롤러 4개, E2E | 재수신·역순 무시, API 키 401 네 가지 경우, 404-express로 READY → DELIVERED 반영 |
+| 커밋 후 예약 [#129](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/129) | Testcontainers 3개 | 커밋 전 미호출·커밋 후 BOOKED, 롤백 시 미호출, 주소 조회 실패 시 READY 유지 |
+| 재예약 [#149](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/149) | Testcontainers 2개 + 단위 | 같은 멱등키·저장된 받는 사람 정보로 재예약, 기준 시각 이후 건은 제외, 단계별 시각 저장 |
+| 수거 정산 이벤트 [#151](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/151) | 서비스 4개, 발행 2개 | PICKED_UP이 빠져도 발행, 중복 웹훅에도 1번, 커밋 후에만 발행 |
+| 배송 취소 [#168](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/168) | Testcontainers 9개, 단위 5개, WireMock 2개 | 취소 시점·중복 취소·수거 후 거부·재시도, `@Version`을 빼면 경합 테스트 실패 |
+| 알림 저장·조회 [#176](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/176) | 통합 6개, 리스너 6개, 컨트롤러 6개, 발행 2개 | 같은 이벤트는 알림 1건, 본인 알림만 조회·수정, 남의 알림은 404 |
+| SSE 실시간 전달 [#177](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/177) | 9개 | 탭 여러 개 수신, 끊긴 연결 제거, 커밋 후에만 전송 |
+| 운영 배포 [#165](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/165) · [#185](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/185) | 운영 구성 로컬 기동 | 테이블 17개 생성, 품종 217개·사진 888장 중복 없이 적재, Kafka 헬스 체크 약 0.3초, 누락 환경변수 검출 |
+
 ## 인프라
 
 EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Docker Compose로 올리고, 외부에는 Nginx의 80/443만 열었습니다.
@@ -278,6 +299,8 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 | 404-express | 별도 저장소의 별도 compose | 128MB |
 | Nginx | 호스트에 설치, HTTPS 종단 | — |
 | 프론트 | 일회용 Node 컨테이너로 빌드해 정적 파일로 배치 | — |
+
+운영 구성을 로컬에서 그대로 띄워 보니 실제 사용량은 앱 약 520MB, Kafka 약 400MB, PostgreSQL 약 55MB로 상한 안에 들어왔습니다. 앱 이미지는 JDK로 빌드하고 JRE로 실행하도록 단계를 나눴고 715MB입니다.
 
 - **모의 택배사 분리** — 404-express는 저장소와 compose가 따로라 배포 주기가 다릅니다. 외부 Docker 네트워크 `replant-net`을 한 번 만들어 두 compose가 함께 쓰고, 별칭(`replant-app`, `404-express`)으로 서로 호출합니다. 택배사는 포트를 하나도 열지 않아 같은 서버 안에서만 통신하고, 양쪽 `X-Api-Key`는 배포 스크립트가 같은 값으로 맞춥니다.
 - **포트 노출 최소화** — 앱·DB·Redis 포트는 모두 `127.0.0.1`에만 바인딩하고, DB는 SSH 터널로만 접속합니다. SSH는 본인 IP만 허용했습니다.
