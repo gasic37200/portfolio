@@ -197,8 +197,8 @@ troubleshooting:
 | 탄력적 IP와 재시작에 강한 구성 (Docker 자동 시작, `restart: unless-stopped`, Redis appendonly) | 서버가 매일 18시에 꺼지고 09시에 켜져 공인 IP와 컨테이너 상태가 흔들림 |
 | 코드 패키지명은 `justcommit` 유지, 컨테이너·DB·앱 이름만 `replant` | 패키지명을 바꾸면 팀원 브랜치 전체와 충돌 |
 | develop 보호 규칙과 CI 규칙을 분리 | 관리자 예외가 규칙 묶음 전체를 건너뛰므로, 직접 머지할 때도 CI는 반드시 돌게 하려고 |
-| API 경로를 행위가 아닌 자원 중심으로 수정 | 멘토링에서 RESTful하지 않다는 지적 |
-| 택배사 재시도는 별도 API 대신 멱등 설계로 처리 | 멘토링 반영 |
+| 택배 접수 재시도 API(`POST /sellers/shipments/{id}/retry`)를 없애고, 같은 예약 API를 같은 멱등키로 서버가 다시 호출 (#103, #149) | 멘토링에서 "재시도 API 대신 접수를 멱등하게 설계하면 된다"는 피드백. 판매자가 누를 필요 없이 스케줄러가 재예약 |
+| 행위가 들어간 경로를 자원 중심으로 수정: `/notifications/{id}/read` → `PATCH /notifications/{id}`, `/notifications/read-all` → `PATCH /notifications` + `{isRead:true}`, `PATCH /shipment/{trackingNo}` → `POST /webhooks/courier` | 멘토링에서 "URL은 행위가 아닌 자원" 지적. 웹훅은 이벤트 전달이라 POST |
 | 택배 예약을 결제 커밋 뒤로 분리 (#129) | 결제가 롤백돼도 택배 예약이 남는 문제. 남은 한계는 응답 지연 |
 | 웹훅 중복은 eventId 테이블 대신 상태 순서로 거름 | 상태가 한 방향으로만 가서 같은 상태가 다시 오는 건 모두 재전송. eventId는 로그 추적용 |
 | 운영 DB는 Flyway 대신 `ddl-auto: update`, Flyway는 최종 프로젝트로 | 마이그레이션 파일이 없어 `validate`로는 빈 DB에서 기동 실패. 대가로 NOT NULL 컬럼 추가가 조용히 실패해 정산이 누락되는 일을 겪음 |
