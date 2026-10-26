@@ -1,0 +1,26 @@
+---
+// Used inside project .mdx files as <YouTube id="..." title="..." />
+type Props = {
+  id: string
+  title: string
+}
+
+const { id, title } = Astro.props
+---
+
+<div class="not-prose my-6">
+  <div class="relative w-full overflow-hidden rounded-xl border border-black/10 dark:border-white/15 bg-black" style="aspect-ratio: 16 / 9;">
+    <iframe
+      class="absolute inset-0 h-full w-full"
+      src={`https://www.youtube-nocookie.com/embed/${id}?rel=0`}
+      title={title}
+      loading="lazy"
+      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <a href={`https://youtu.be/${id}`} target="_blank" rel="noopener" class="mt-2 inline-block text-sm text-black/60 dark:text-white/60 hover:text-black hover:dark:text-white blend">
+    유튜브에서 보기 →
+  </a>
+</div>

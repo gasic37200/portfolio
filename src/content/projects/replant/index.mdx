@@ -51,8 +51,6 @@ troubleshooting:
 - **기여:** 팀 병합 PR 106개 중 19개
 - **배포:** AWS EC2 + Docker Compose + Nginx(HTTPS)로 프론트·백엔드·모의 택배사까지 운영
 
-![RePlant 전체 흐름: 가입부터 정산까지 구매자·판매자·시스템·외부 연동의 단계](/images/projects/replant/overall-flow.webp)
-
 | 구분 | 기술 |
 | --- | --- |
 | Backend | Java 25, Spring Boot 4, Spring Modulith(모듈러 모놀리스) |
@@ -60,6 +58,37 @@ troubleshooting:
 | 실시간 | SSE |
 | Infra | AWS EC2, Docker Compose, Nginx, GitHub Actions |
 | Front | Vite, React |
+
+## 시연 영상
+
+<YouTube id="H4A-7LDkAa0" title="RePlant Market 시연 영상" />
+
+서비스 소개 → 상품 둘러보기·등록 → 장바구니와 결제 → 판매자 주문 받기 → 배송 취소와 진행 → 구매 확정과 정산 순서로 보여 줍니다.
+
+<Planning summary="전체 흐름 · 유스케이스 · 주요 서비스 정책">
+
+**전체 흐름** — 가입부터 정산까지, 구매자·판매자·시스템·외부 연동이 각 단계에서 하는 일입니다.
+
+![RePlant 전체 흐름: 가입부터 정산까지 구매자·판매자·시스템·외부 연동의 단계](/images/projects/replant/overall-flow.webp)
+
+**유스케이스** — 비회원·회원·판매자 세 액터와 외부 시스템(카카오 OAuth, 모의 택배 API, 토스페이먼츠)으로 기능 범위를 나눴습니다.
+
+![RePlant 유스케이스 다이어그램](/images/projects/replant/usecase.webp)
+
+**주요 서비스 정책**
+
+| 정책 | 내용 |
+| --- | --- |
+| 정산 수수료 5% | 판매액에만 적용, 배송비 제외, 원 단위 미만 버림 |
+| 72시간 자동 구매 확정 | 배송 완료 시각부터 72시간이 지나면 자동 확정 |
+| 배송비 3,000원 | 판매자 주문당 고정 (최종 프로젝트에서 거리 기반 계산 예정) |
+| 결제 대기 10분 | 예치금이 부족할 때만 결제 대기 상태로 둠 |
+| 충전 10,000원 단위 | 충전은 취소할 수 없고, 예치금 범위 안에서 인출 |
+| 상품 사진 1~10장 | 최소 1장 필수, 첫 번째 사진이 대표 사진 |
+| 주문 취소 | 배송 준비·접수 완료 상태에서만 부분 취소 가능 |
+| 자기 상품 구매 불가 | 판매자는 자신이 등록한 상품을 구매할 수 없음 |
+
+</Planning>
 
 ## 문제와 해결 방향
 
@@ -77,15 +106,6 @@ troubleshooting:
 - **팀장** — 이슈 1개 = PR 1개, 리뷰 승인 후 머지 같은 협업 규칙과 CI, 문서를 정리
 
 회원, 상품, 장바구니·주문, 결제·정산은 다른 팀원이 담당했습니다.
-
-<details>
-<summary><strong>기획: 유스케이스 다이어그램</strong></summary>
-
-![RePlant 유스케이스 다이어그램](/images/projects/replant/usecase.webp)
-
-비회원·회원·판매자 세 액터와 외부 시스템(카카오 OAuth, 모의 택배 API, 토스페이먼츠)으로 기능 범위를 나눴습니다.
-
-</details>
 
 ## 아키텍처
 

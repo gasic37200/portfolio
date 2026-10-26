@@ -1,0 +1,24 @@
+---
+// Used inside project .mdx files to fold planning material away from the backend story:
+// <Planning summary="유스케이스 · 전체 흐름 · 서비스 정책"> ...markdown... </Planning>
+type Props = {
+  summary?: string
+  open?: boolean
+}
+
+const { summary, open = false } = Astro.props
+---
+
+<details class="planning not-prose group my-8 rounded-xl border border-black/15 dark:border-white/20 bg-black/[0.02] dark:bg-white/[0.03]" open={open}>
+  <summary class="flex cursor-pointer select-none list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+    <span>
+      <span class="block font-semibold text-black dark:text-white">기획 보기</span>
+      {summary && <span class="mt-0.5 block text-sm text-black/60 dark:text-white/60">{summary}</span>}
+    </span>
+    <span class="shrink-0 rounded-full border border-black/15 dark:border-white/25 px-3 py-1 text-xs text-black/70 dark:text-white/70 group-open:hidden">펼치기</span>
+    <span class="hidden shrink-0 rounded-full border border-black/15 dark:border-white/25 px-3 py-1 text-xs text-black/70 dark:text-white/70 group-open:inline">접기</span>
+  </summary>
+  <div class="planning-body prose dark:prose-invert max-w-full border-t border-black/10 dark:border-white/15 px-5 py-5">
+    <slot />
+  </div>
+</details>
