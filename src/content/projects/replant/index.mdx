@@ -21,28 +21,33 @@ troubleshooting:
   problem: "처음 구현(#103)은 결제 트랜잭션 안에서 택배사 예약 API를 호출했다. 결제가 뒤 단계에서 롤백되면 택배사에는 예약만 남고, 택배사 응답(최대 5초)을 기다리는 동안 결제 트랜잭션도 열려 있었다."
   cause: "외부 API 호출은 DB 트랜잭션의 롤백 대상이 아닌데, 호출이 트랜잭션 경계 안에 있었다."
   solution: "배송 생성을 두 단계로 나눴다. 결제 트랜잭션에서는 배송 행(READY + 멱등키)만 저장하고, 택배사 예약은 커밋 후 콜백에서 호출한다(#129). 첫 시도에서는 콜백 안의 저장이 커밋되지 않았는데, Testcontainers PostgreSQL 통합 테스트로 이를 발견하고 PROPAGATION_NOT_SUPPORTED로 트랜잭션을 떼어 save()마다 커밋되게 했다. 예약에 실패한 건은 5분마다 1분 넘은 READY 배송을 같은 멱등키로 재예약한다(#149)."
-  result: "통합 테스트로 '커밋 전에는 택배사를 부르지 않고 커밋 후 BOOKED·송장 저장', '롤백되면 배송 행도 택배사 호출도 없음', '판매자 주소 조회가 실패해도 READY로 남음'을 고정했고, 기존 실제 결제 흐름 테스트는 코드 변경 없이 통과했다(전체 392개). 남은 한계: 택배사 지연 카오스 테스트에서 결제 응답이 배송 1건당 최대 8초(연결 3초 + 응답 5초) 늦어져, 비동기 전환과 서킷 브레이커를 다음 과제로 정했다."
+  result: "통합 테스트로 '커밋 전에는 택배사를 부르지 않고 커밋 후 BOOKED·송장 저장', '롤백되면 배송 행도 택배사 호출도 없음', '판매자 주소 조회가 실패해도 READY로 남음'을 고정했고, 기존 실제 결제 흐름 테스트는 코드 변경 없이 통과했다(전체 392개). 남은 한계: 커밋 후 호출이 같은 요청 스레드에서 동기로 돌아, 택배사가 느리면 결제 응답이 배송 1건당 최대 8초(연결 타임아웃 3초 + 응답 타임아웃 5초) 늦어질 수 있다. 실제 지연을 재는 카오스 테스트와 비동기 전환·서킷 브레이커를 다음 과제로 정했다. 배운 점: 외부 호출은 DB 롤백으로 되돌릴 수 없어, 호출 시점을 커밋 뒤로 옮기고 다시 시도할 수 있는 상태를 먼저 커밋해 둔다."
   post: "payment-commit-then-courier"
 - title: "재예약 스케줄러가 주문 취소를 덮어쓰는 문제 (Lost Update)"
   problem: "재예약 스케줄러가 택배사 응답을 기다리는 사이 주문 취소가 먼저 저장되면, 재예약이 BOOKED로 덮어써 취소가 사라지고 택배가 그대로 수거될 수 있었다."
   cause: "두 작업이 같은 배송 행을 각자 읽고, 판단하고, 저장했다."
   solution: "배송에 @Version 낙관적 락을 걸어 늦게 저장하는 쪽을 실패시켰다. 외부 API를 기다리는 동안 DB 락을 잡지 않으려고 비관적 락 대신 골랐다. 택배사에 남은 예약은 취소 쪽이 같은 멱등키로 다시 불러 송장을 받은 뒤 취소하고, 택배사 취소 응답은 200 취소·404 없음·409 이미 수거(재시도 안 함)·5xx 재시도로 나눠 실패한 취소를 5분마다 다시 보낸다(#168)."
-  result: "Testcontainers 통합 테스트 9개로 '커밋 후에만 택배사 취소 호출', '주문 롤백 시 미호출', '중복 취소에도 한 번만 호출', '수거 이후 취소 거부', '실패 후 스케줄러 재시도', '409는 재시도 안 함'을 고정했다. 경합 테스트는 @Version을 빼면 실패하는 것까지 확인해 락이 실제로 경합을 막는다는 것을 보였다(전체 466개 통과)."
+  result: "Testcontainers 통합 테스트 9개로 '커밋 후에만 택배사 취소 호출', '주문 롤백 시 미호출', '중복 취소에도 한 번만 호출', '수거 이후 취소 거부', '실패 후 스케줄러 재시도', '409는 재시도 안 함'을 고정했다. 경합 테스트는 @Version을 빼면 실패하는 것까지 확인해 락이 실제로 경합을 막는다는 것을 보였다(전체 466개 통과). 남은 한계: 드물게 재예약과 동시에 저장되면 취소가 낙관적 락 예외로 실패할 수 있고, 다시 요청하면 처리된다. 배운 점: 외부 API를 기다리는 구간에서는 락을 잡지 않고, 늦게 저장하는 쪽을 실패시킨다."
 - title: "웹훅 중복·순서 뒤바뀜과 잘못된 응답 코드"
   problem: "택배사 웹훅은 중복되거나 순서가 바뀌거나 중간 단계가 빠질 수 있었다. 처음에는 모르는 주문번호에 500을 돌려줘 택배사가 같은 이벤트를 계속 다시 보냈고, 키 검사에서 예외가 빠져 틀린 키도 통과했다."
   cause: "택배사가 5xx면 재전송하고 4xx면 포기한다는 계약을 생각하지 않고, 예외로 흐름을 처리했다."
-  solution: "상태는 앞으로만 반영하는 도메인 규칙 하나로 중복과 역순을 걸렀다(eventId 테이블 없이). 다시 보내도 결과가 같은 경우는 로그 후 200, 키 오류는 401로 막고 서버 키가 비어 있어도 닫히게 했다(#123). 수거 웹훅이 빠져도 다음 단계가 처음 반영될 때 택배비 정산 이벤트를 한 번만 발행한다(#151)."
-  result: "테스트로 '같은 상태 재수신·순서 뒤바뀜 무시', '키 맞음 200, 틀림·없음·서버 미설정 401, 401이면 서비스 미호출', '중복 웹훅에도 정산 이벤트 1번, 커밋 후에만 발행'을 고정했다. 404-express 컨테이너로 예약 후 웹훅 3건을 받아 READY → PICKED_UP → IN_TRANSIT → DELIVERED까지 DB에 반영되는 것을 E2E로 확인했다."
-- title: "SSE 알림을 보낼 때 인증된 연결도 401·403으로 막히는 문제"
-  problem: "로그인한 회원의 SSE 연결로 알림을 보내는 순간 401·403이 났다."
+  solution: "상태는 앞으로만 반영하는 도메인 규칙 하나로 중복과 역순을 걸렀다(eventId 테이블 없이). 다시 보내도 결과가 같은 경우는 로그 후 200, 키 오류는 401로 막고 서버 키가 비어 있어도 닫히게 했다(#123). 수거 웹훅이 빠져도 다음 단계가 처음 반영될 때 택배비 정산 이벤트를 한 번만 발행한다(#151). 상태가 되돌아오거나 단계별 이력이 필요해지면 상태별 시각 컬럼이나 이벤트 테이블로 확장한다."
+  result: "테스트로 '같은 상태 재수신·순서 뒤바뀜 무시', '키 맞음 200, 틀림·없음·서버 미설정 401, 401이면 서비스 미호출', '중복 웹훅에도 정산 이벤트 1번, 커밋 후에만 발행'을 고정했다. 404-express 컨테이너로 예약 후 웹훅 3건을 받아 READY → PICKED_UP → IN_TRANSIT → DELIVERED까지 DB에 반영되는 것을 수동 E2E로 확인했다(전체 370개 통과). 남은 한계: 웹훅과 예약 응답을 모두 놓쳤을 때 택배사 상태를 직접 조회해 맞추는 대사 작업은 없다."
+- title: "배송에 주문 정보를 복사했다가 순환 의존으로 되돌린 문제"
+  problem: "재예약·알림·정산 이벤트에 필요한 주문 정보(주문 id, 구매자, 판매자, 택배비, 받는 사람)를 배송 테이블에 복사해 저장했다. 컬럼을 추가하기 전에 만든 배송·알림은 값이 비어, 알림에서 주문 상세로 이동할 수 없었고 운영 보정 SQL이 따로 필요해졌다(#199). 같은 값을 주문과 배송 두 곳에서 관리하게 됐다."
+  cause: "처음 복사한 이유는 재예약 요청을 주문 조회 없이 배송에 저장된 값만으로 만들어, 첫 예약과 재예약이 같은 요청이 되게 하려는 것이었다(멱등키 재사용 시 내용 불일치 409 방지, #149). 하지만 주문을 조회하지 못한 진짜 이유는 조회 경로가 막혀 있어서였다. ShipmentService가 배송 로직과 배송 조회(ShipmentQuery 구현)를 함께 맡고 있었고, 주문 조회(OrderReadService)가 배송 조회를 쓰고 있어 배송 로직이 주문 조회를 쓰면 빈 순환 의존이 생겼다. 결제 후 바뀌지 않는 값인데도 순환을 피하려고 복사로 우회한 것이다."
+  solution: "배송 조회를 ShipmentQueryService로 분리해 의존을 한 방향으로 만들었다(주문 조회 → 배송 조회, 배송 로직 → 주문 조회). 주문 쪽 공개 조회에 OrderQuery.getShippingInfo(sellerOrderId)를 추가해 필요할 때 조회하고, 결제 시점에 고정해야 하는 상품 요약(item_summary)만 배송에 남겼다(#204, #206). 중간에 배송 저장소에서 주문 테이블을 JOIN하는 안도 구현했지만, 배송 모듈이 주문 테이블 구조를 알게 돼 책임에 맞지 않아 버렸다."
+  result: "배송 테이블의 복사 컬럼 7개를 제거했다. 운영 DB 컬럼은 ddl-auto: update가 지우지 않아 배포 후 보정 SQL로 정리한다. 전체 테스트 567개가 통과했고, 앱 전체를 띄우는 통합 테스트(@SpringBootTest)로 빈 순환이 없는 것을 확인했다. 배운 점: 저장할지 조회할지는 값이 바뀌는지로 정하고, 순환 의존은 데이터 복사가 아니라 역할 분리로 끊는다."
+- title: "SSE 알림을 보낼 때 인증된 연결도 401·403으로 막힐 수 있는 문제"
+  problem: "SSE 실시간 알림을 구현하면서, 로그인한 회원의 연결로 알림을 보내는 순간 401·403으로 막힐 수 있다는 것을 미리 확인했다. 그대로 두면 실시간 알림이 전달되지 않는다."
   cause: "SSE 응답은 서블릿 비동기 디스패치로 나가는데, JWT 필터(OncePerRequestFilter)는 비동기 디스패치에서 다시 돌지 않아 인증 정보가 비어 있고, anyRequest().authenticated()에 막혔다."
   solution: "비동기 디스패치는 처음 요청이 인증을 통과한 뒤에만 생기므로 DispatcherType.ASYNC만 허용했다. 서버는 안 읽은 알림 수만 보내고, X-Accel-Buffering: no와 30초 ping으로 프록시가 응답을 모아 두거나 조용한 연결을 끊지 않게 했다(#177). 운영 Nginx에는 SSE 경로에만 HTTP/1.1·버퍼링 끔·1시간 타임아웃을 줬다(#209)."
-  result: "테스트 9개로 '연결 즉시 현재 수 전송', '탭 두 개 모두 수신·다른 회원 미수신', '끊긴 연결 제거', '알림 저장·읽음이 커밋된 뒤에만 전송'을 고정했다(전체 521개 통과). 운영 반영 전 nginx -t로 설정을 검사했다."
+  result: "테스트 9개로 '연결 즉시 현재 수 전송', '탭 두 개 모두 수신·다른 회원 미수신', '끊긴 연결 제거', '알림 저장·읽음이 커밋된 뒤에만 전송'을 고정했다(전체 521개 통과). 운영 반영 전 nginx -t로 설정을 검사했다. 남은 한계: 연결 목록을 메모리에 두는 구조라 서버가 여러 대가 되면 Redis Pub/Sub이 필요하다."
 - title: "첫 운영 배포에서 앱이 뜨지 않는 문제 (Kafka 헬스 체크)"
   problem: "첫 배포에서 Kafka가 unhealthy로 표시돼 Spring 앱이 기동되지 않았다. Kafka 자체는 정상이었다(OOM 없음, 재시작 0회)."
   cause: "헬스 체크가 10초마다 kafka-topics.sh로 JVM을 새로 띄웠는데, 서버에서 이미지를 빌드하느라 CPU 크레딧이 바닥나 10초를 넘겼다. depends_on: service_healthy 때문에 앱은 계속 기다렸다."
   solution: "헬스 체크를 포트 확인(bash /dev/tcp)으로 바꿨다. 같은 배포에서 새 환경변수(PAYMENT_KEY_ENCRYPTION_KEY) 누락으로 기동이 실패한 것도 겪어, 배포 스크립트가 .env.example과 서버 .env를 비교해 빠진 변수가 있으면 멈추게 했다(#185)."
-  result: "헬스 체크가 약 0.3초로 줄었다(임시 Kafka 컨테이너에서 기동 전 실패, 기동 후 성공 확인). 누락 변수 검사는 키를 뺀 .env에서 검출되는 것을 확인했고, 배포 후 운영 health UP과 품종 217개 조회까지 확인했다."
+  result: "헬스 체크가 약 0.3초로 줄었다(임시 Kafka 컨테이너에서 기동 전 실패, 기동 후 성공 확인). 누락 변수 검사는 키를 뺀 .env에서 검출되는 것을 확인했고, 머지 전 운영 서버의 health UP과 품종 217개 조회를 확인했다. 남은 한계: 서버에서 직접 이미지를 빌드해 첫 빌드가 10분 넘게 걸리고 CPU 크레딧을 소진한다. 이미지 레지스트리와 CD는 아직 없다."
 ---
 
 > **식물 C2C 마켓** — 일단커밋(JustCommit), 프로그래머스 데브코스 6팀
@@ -277,9 +282,9 @@ troubleshooting:
 | PR | 추가한 테스트 | 확인한 것 |
 | --- | --- | --- |
 | 배송 생성·예약 [#103](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/103) | 단위 5개, WireMock 2개 | 상태 전이, 중복 예약 방지, 주문번호 형식, 택배사 500은 재시도 가능한 실패로 분류 |
-| 웹훅 수신 [#123](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/123) | 단위 4개, 컨트롤러 4개, E2E | 재수신·역순 무시, API 키 401 네 가지 경우, 404-express로 READY → DELIVERED 반영 |
+| 웹훅 수신 [#123](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/123) | 단위 4개, 컨트롤러 4개, E2E | 재수신·역순 무시, API 키 401 세 가지 경우·401이면 서비스 미호출, 404-express로 READY → DELIVERED 반영 |
 | 커밋 후 예약 [#129](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/129) | Testcontainers 3개 | 커밋 전 미호출·커밋 후 BOOKED, 롤백 시 미호출, 주소 조회 실패 시 READY 유지 |
-| 재예약 [#149](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/149) | Testcontainers 2개 + 단위 | 같은 멱등키·저장된 받는 사람 정보로 재예약, 기준 시각 이후 건은 제외, 단계별 시각 저장 |
+| 재예약 [#149](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/149) | Testcontainers 2개 + 단위 | 같은 멱등키로 재예약, 기준 시각 이후 건은 제외, 단계별 시각 저장 |
 | 수거 정산 이벤트 [#151](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/151) | 서비스 4개, 발행 2개 | PICKED_UP이 빠져도 발행, 중복 웹훅에도 1번, 커밋 후에만 발행 |
 | 배송 취소 [#168](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/168) | Testcontainers 9개, 단위 5개, WireMock 2개 | 취소 시점·중복 취소·수거 후 거부·재시도, `@Version`을 빼면 경합 테스트 실패 |
 | 알림 저장·조회 [#176](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/176) | 통합 6개, 리스너 6개, 컨트롤러 6개, 발행 2개 | 같은 이벤트는 알림 1건, 본인 알림만 조회·수정, 남의 알림은 404 |
@@ -307,7 +312,7 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 - **Redis** — `requirepass`, `maxmemory 256mb`, `noeviction`, `appendonly yes`. 인증번호·토큰·멱등키를 담는 임시 저장소라 메모리가 차도 키를 지우지 않게 하고, 그 대신 모든 키에 TTL을 겁니다.
 - **Nginx** — Let's Encrypt 인증서(Certbot 자동 갱신), HTTP는 HTTPS로 리다이렉트, `/api`·OAuth 경로는 앱으로 프록시하고 나머지는 SPA로 응답합니다. SSE 경로만 따로 떼어 `proxy_buffering off`, `proxy_read_timeout 1h`를 주고, 앱도 `X-Accel-Buffering: no`와 30초 ping을 보냅니다([#209](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/209)).
 - **배포** — 서버에서 `deploy.sh` 한 번으로 실행합니다([#165](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/165), [#185](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/185)). 비밀값 확인 → 기존 컨테이너 내림(볼륨 유지) → BE·택배사·FE 최신 코드 받기 → `.env.example` 대비 빠진 환경변수 검사 → 프론트 번들에 결제 키가 들어갔는지 검사 → Nginx 설정 재작성 → 기동 후 health 대기. 비밀값 원본은 서버의 권한 600 파일 하나에만 두고, S3는 EC2 IAM 역할로 접근해 AWS 키를 두지 않았습니다.
-- **S3 이미지** — 업로드는 서버가 발급한 10분짜리 Presigned PUT URL로 프론트가 S3에 직접 올리고, 조회는 공개 URL로 합니다. 버킷 정책(`products/*`, `species/*`만 공개 조회), EC2 IAM 역할(앱에 AWS 키 없음), CORS, 로컬 S3 환경([#126](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/126)), 품종 사진 888장 업로드를 맡았고, URL 발급 API는 팀원이 구현했습니다([#124](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/124)).
+- **S3 이미지** — 업로드는 서버가 발급한 10분짜리 Presigned PUT URL로 프론트가 S3에 직접 올리고, 조회는 공개 URL로 합니다. 버킷 정책(`products/*`, `species/*`만 공개 조회), EC2 IAM 역할(앱에 AWS 키 없음), CORS, 로컬 S3 환경(RustFS, [#126](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/126)), 품종 사진 888장 업로드를 맡았고, URL 발급 API는 팀원이 구현했습니다([#124](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/124)).
 - **CI** — PR마다 GitHub Actions로 빌드를 돌리고([#35](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/35)), develop에는 빌드 통과를 예외 없는 필수 규칙으로 걸었습니다. CD는 아직 없고 배포는 수동입니다.
 
 <details>
@@ -358,6 +363,7 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 | Let's Encrypt + 무료 도메인 | ACM + ALB | ACM은 문의 대상이고 ALB가 필요. 인증서는 Certbot이 자동 갱신 |
 | 서버에서 직접 이미지 빌드 | GHCR, ECR | 첫 배포를 `deploy.sh` 하나로 빠르게 끝내려고. 대신 첫 빌드가 10분 넘게 걸리고 CPU 크레딧을 소진함(Kafka 헬스체크 장애의 원인) |
 | S3 업로드는 Presigned PUT URL, 조회는 공개 URL | 서버 경유 업로드, 비공개 버킷 + Presigned GET | 업로드가 서버를 거치지 않아 EC2 메모리·대역폭 부담이 없고, 쓰기 권한은 형식·크기까지 서명한 10분짜리 URL로만 줌. 상품 사진은 누구나 보는 이미지라 조회는 서명 없이 공개 |
+| 로컬 S3로 RustFS 컨테이너 ([#126](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/126)) | MinIO, 개발용 실제 S3 버킷 | AWS 계정 없이 팀원 누구나 docker compose로 같은 S3 환경을 띄움. 초기화 컨테이너가 버킷·공개 정책(`products/*`, `species/*`)·CORS를 운영과 같은 파일로 적용하고, 여러 번 실행해도 결과가 같음. MinIO는 공식 Docker 이미지를 받을 수 없어 대체. 로컬은 endpoint `localhost:9000` + path-style, 운영은 EC2 IAM 역할 |
 | GitHub Actions CI | — | 무료이고 저장소에 내장. develop 규칙에 빌드 통과를 예외 없는 필수 체크로 지정 |
 
 ## AI 활용
@@ -385,10 +391,14 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 
 외부 시스템과 연동하는 기능은 정상 흐름보다 **실패했을 때 누가 다시 보낼지**를 먼저 설계해야 한다는 것을 체감했습니다. 멱등키, 재시도, 단방향 상태 전이, 낙관적 락으로 대부분을 막았지만, 택배사 응답 대기와 상태 대사(직접 조회해 맞추기)는 남은 과제입니다. 또 모의 택배사를 직접 만들면서 외부 연동 계약(응답 코드, 재시도 규칙)을 호출하는 쪽과 받는 쪽 양쪽에서 이해할 수 있었습니다.
 
+운영에서는 #176 이후 추가한 알림 종류 7개(#188에서 4개, #193에서 3개)가 저장되지 않는 일도 겪었습니다. Hibernate가 `@Enumerated(STRING)` 컬럼에 허용 값을 체크 제약으로 만드는데, 테스트는 `ddl-auto: create-drop`이라 매번 최신 값으로 만들고 운영은 `update`라 기존 제약을 고치지 않았습니다. CI가 운영과 다른 스키마를 검사하고 있었던 것이고, 운영 DB에서 제약을 직접 지워 해결했습니다. 세미 프로젝트에서 Flyway를 끈 결정의 대가였습니다.
+
 팀장으로서 협업 규칙, CI, 문서를 정형화해 협업 기반을 만드는 건 처음이라 미숙했지만, 큰 도움이 된 경험이었습니다. 자체 평가는 8/10입니다.
 
 **다음 개선 방향**
 
+- 택배사 지연 카오스 테스트로 결제 응답 지연을 실제로 측정
 - 택배 예약을 비동기로 바꾸고 서킷 브레이커로 택배사 장애를 격리
 - 택배사 상태를 직접 조회하는 대사로 웹훅 유실 보완
 - Spring Modulith 이벤트 발행 기록과 `@Externalized`로 Kafka 전송 유실 방지
+- Flyway 마이그레이션과 운영 validate로 스키마 변경을 코드로 관리 (테스트·운영 스키마 일치)
