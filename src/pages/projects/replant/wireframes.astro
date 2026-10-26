@@ -1,0 +1,80 @@
+---
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import screens from "@lib/replant-wireframes.json"
+
+// Screens were rendered from the team's design canvas, which needs a claude.ai login to open
+const GROUPS: Record<string, string> = {
+  "1": "메인",
+  "2": "상품 상세",
+  "3": "주문서",
+  "4": "장바구니",
+  "5": "주문 결과",
+  "6": "주문 목록",
+  "7": "주문 상세",
+  "8": "로그인 · 회원가입",
+  "9": "예치금",
+  "10": "마이페이지 · 알림",
+  "11": "판매자",
+  "12": "예외 화면",
+}
+
+const groups = Object.entries(GROUPS).map(([number, name]) => ({
+  id: `screen-${number}`,
+  number,
+  name,
+  screens: screens.filter((screen) => screen.code.split("-")[0] === number),
+}))
+
+const title = "RePlant 와이어프레임"
+const description = `RePlant Market 화면 ${screens.length}개를 빈 상태·실패 상태까지 나눠 그린 와이어프레임입니다.`
+---
+
+<PageLayout title={title} description={description}>
+  <TopLayout>
+    <div class="animate">
+      <a href="/projects/replant" class="inline-flex items-center gap-1 text-sm hover:text-black hover:dark:text-white blend">
+        ← RePlant Market
+      </a>
+      <div class="page-heading mt-4">{title}</div>
+      <p class="mt-2">{description} 이미지를 누르면 원본 크기로 열립니다.</p>
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <nav aria-label="화면 묶음" class="animate flex flex-wrap gap-2">
+      {groups.map((group) => (
+        <a href={`#${group.id}`} class="rounded-full border border-black/15 dark:border-white/20 px-3 py-1 text-sm hover:bg-black/5 hover:dark:bg-white/10 blend">
+          {group.number}. {group.name}
+        </a>
+      ))}
+    </nav>
+    {groups.map((group) => (
+      <section id={group.id} class="animate mt-12 scroll-mt-24">
+        <h2 class="font-semibold text-black dark:text-white">{group.number}. {group.name}</h2>
+        <ul class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {group.screens.map((screen) => (
+            <li>
+              <figure>
+                <a href={`/images/projects/replant/wireframes/${screen.file}`} target="_blank" rel="noopener" class="block overflow-hidden rounded-lg border border-black/15 dark:border-white/20 hover:border-black/40 hover:dark:border-white/50 blend">
+                  <img
+                    src={`/images/projects/replant/wireframes/${screen.file}`}
+                    alt={`${screen.code} ${screen.title} 화면`}
+                    width={screen.width}
+                    height={screen.height}
+                    loading="lazy"
+                    decoding="async"
+                    class="aspect-[4/3] w-full object-cover object-top bg-white"
+                  />
+                </a>
+                <figcaption class="mt-2 text-sm">
+                  <span class="font-semibold text-black dark:text-white">{screen.code}</span> {screen.title}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </BottomLayout>
+</PageLayout>

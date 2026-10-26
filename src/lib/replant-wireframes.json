@@ -1,0 +1,303 @@
+[
+  {
+    "code": "1-A",
+    "title": "메인 · 상품 목록",
+    "file": "Main.webp",
+    "width": 1200,
+    "height": 1733
+  },
+  {
+    "code": "1-B",
+    "title": "메인 · 빈 상태 (검색 결과 없음)",
+    "file": "MainEmpty.webp",
+    "width": 1200,
+    "height": 933
+  },
+  {
+    "code": "2-A",
+    "title": "상품 상세 · 판매중",
+    "file": "Detail.webp",
+    "width": 1200,
+    "height": 1250
+  },
+  {
+    "code": "2-B",
+    "title": "상품 상세 · 판매완료 (버튼 비활성)",
+    "file": "DetailSold.webp",
+    "width": 1200,
+    "height": 1250
+  },
+  {
+    "code": "3-A",
+    "title": "주문서",
+    "file": "Order.webp",
+    "width": 1200,
+    "height": 1033
+  },
+  {
+    "code": "3-B",
+    "title": "주문서 · 예치금 부족",
+    "file": "OrderShort.webp",
+    "width": 1200,
+    "height": 1033
+  },
+  {
+    "code": "4-A",
+    "title": "장바구니",
+    "file": "Cart.webp",
+    "width": 1200,
+    "height": 967
+  },
+  {
+    "code": "4-B",
+    "title": "장바구니 · 빈 상태",
+    "file": "CartEmpty.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "5",
+    "title": "주문 완료",
+    "file": "OrderDone.webp",
+    "width": 1200,
+    "height": 800
+  },
+  {
+    "code": "5-B",
+    "title": "주문 실패 (409)",
+    "file": "OrderFail.webp",
+    "width": 1200,
+    "height": 900
+  },
+  {
+    "code": "5-C",
+    "title": "결제 시간 만료",
+    "file": "OrderExpired.webp",
+    "width": 1200,
+    "height": 667
+  },
+  {
+    "code": "6-A",
+    "title": "주문 목록 (구매자)",
+    "file": "Orders.webp",
+    "width": 1200,
+    "height": 1133
+  },
+  {
+    "code": "6-B",
+    "title": "주문 목록 · 빈 상태",
+    "file": "OrdersEmpty.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "7",
+    "title": "주문 상세 (구매자)",
+    "file": "OrderDetail.webp",
+    "width": 1200,
+    "height": 1733
+  },
+  {
+    "code": "8-A",
+    "title": "로그인",
+    "file": "Login.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "8-B",
+    "title": "로그인 · 실패",
+    "file": "LoginError.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "8-C",
+    "title": "회원가입 ① 이메일 인증",
+    "file": "Signup.webp",
+    "width": 1200,
+    "height": 833
+  },
+  {
+    "code": "8-D",
+    "title": "회원가입 ② 정보 입력",
+    "file": "SignupInfo.webp",
+    "width": 1200,
+    "height": 833
+  },
+  {
+    "code": "8-E",
+    "title": "회원가입 ③ 완료",
+    "file": "SignupDone.webp",
+    "width": 1200,
+    "height": 667
+  },
+  {
+    "code": "8-F",
+    "title": "소셜 가입 추가 정보",
+    "file": "SocialSignup.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "9-A",
+    "title": "예치금",
+    "file": "Wallet.webp",
+    "width": 1200,
+    "height": 1117
+  },
+  {
+    "code": "9-B",
+    "title": "예치금 · 빈 상태",
+    "file": "WalletEmpty.webp",
+    "width": 1200,
+    "height": 833
+  },
+  {
+    "code": "9-C",
+    "title": "충전",
+    "file": "Charge.webp",
+    "width": 1200,
+    "height": 867
+  },
+  {
+    "code": "9-D",
+    "title": "충전 · 주문서에서 넘어온 경우",
+    "file": "ChargeFromOrder.webp",
+    "width": 1200,
+    "height": 917
+  },
+  {
+    "code": "9-E",
+    "title": "충전 성공",
+    "file": "ChargeSuccess.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "9-F",
+    "title": "충전 실패",
+    "file": "ChargeFail.webp",
+    "width": 1200,
+    "height": 667
+  },
+  {
+    "code": "9-G",
+    "title": "충전 내역",
+    "file": "ChargeHistory.webp",
+    "width": 1200,
+    "height": 867
+  },
+  {
+    "code": "10-A",
+    "title": "마이페이지 · 판매자",
+    "file": "MyPageSeller.webp",
+    "width": 1200,
+    "height": 1033
+  },
+  {
+    "code": "10-B",
+    "title": "마이페이지 · 일반 회원",
+    "file": "MyPage.webp",
+    "width": 1200,
+    "height": 967
+  },
+  {
+    "code": "10-C",
+    "title": "배송지 관리",
+    "file": "Addresses.webp",
+    "width": 1200,
+    "height": 917
+  },
+  {
+    "code": "10-D",
+    "title": "배송지 추가 모달",
+    "file": "AddressModal.webp",
+    "width": 1200,
+    "height": 917
+  },
+  {
+    "code": "10-E",
+    "title": "알림",
+    "file": "Notifications.webp",
+    "width": 1200,
+    "height": 833
+  },
+  {
+    "code": "10-F",
+    "title": "알림 · 빈 상태",
+    "file": "NotificationsEmpty.webp",
+    "width": 1200,
+    "height": 667
+  },
+  {
+    "code": "11-A",
+    "title": "판매자 등록",
+    "file": "SellerRegister.webp",
+    "width": 1200,
+    "height": 867
+  },
+  {
+    "code": "11-B",
+    "title": "상품 등록",
+    "file": "ProductNew.webp",
+    "width": 1200,
+    "height": 1300
+  },
+  {
+    "code": "11-C",
+    "title": "상품 수정",
+    "file": "ProductEdit.webp",
+    "width": 1200,
+    "height": 1300
+  },
+  {
+    "code": "11-D",
+    "title": "내 판매 목록",
+    "file": "MyListings.webp",
+    "width": 1200,
+    "height": 1083
+  },
+  {
+    "code": "11-E",
+    "title": "내 판매 목록 · 빈 상태",
+    "file": "MyListingsEmpty.webp",
+    "width": 1200,
+    "height": 750
+  },
+  {
+    "code": "11-F",
+    "title": "판매 주문 목록",
+    "file": "SalesOrders.webp",
+    "width": 1200,
+    "height": 1000
+  },
+  {
+    "code": "11-G",
+    "title": "판매 주문 상세",
+    "file": "SalesOrderDetail.webp",
+    "width": 1200,
+    "height": 1300
+  },
+  {
+    "code": "11-H",
+    "title": "정산",
+    "file": "Settlement.webp",
+    "width": 1200,
+    "height": 1083
+  },
+  {
+    "code": "12-A",
+    "title": "404",
+    "file": "NotFound.webp",
+    "width": 1200,
+    "height": 667
+  },
+  {
+    "code": "12-B",
+    "title": "로그인 필요",
+    "file": "LoginRequired.webp",
+    "width": 1200,
+    "height": 667
+  }
+]
