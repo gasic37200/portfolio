@@ -70,6 +70,22 @@ troubleshooting:
 - 같은 멱등키 + 같은 본문은 기존 송장을 200으로, 다른 본문은 409로 응답
 - 실패한 웹훅은 DEAD 목록으로 모으고 관리자 API로 수동 재전송
 
+<details>
+<summary><strong>API 명세 보기</strong></summary>
+
+| 메서드 | 경로 | 인증 | 설명 |
+| --- | --- | --- | --- |
+| POST | `/api/v1/shipments` | `X-Api-Key` | 예약. `Idempotency-Key` 헤더(= RePlant의 `courierOrderNo`) |
+| GET | `/api/v1/shipments/{trackingNo}` | `X-Api-Key` | 조회 |
+| POST | `/api/v1/shipments/{trackingNo}/cancel` | `X-Api-Key` | 취소 |
+| POST | `/api/v1/admin/shipments/{trackingNo}/advance` | `X-Admin-Key` | 테스트용으로 한 단계 진행 |
+| GET | `/api/v1/admin/webhooks?status=PENDING\|SENT\|DEAD` | `X-Admin-Key` | 웹훅 목록 |
+| POST | `/api/v1/admin/webhooks/{eventId}/retry` | `X-Admin-Key` | DEAD 웹훅 재전송 |
+
+에러 코드: `SHIPMENT_NOT_FOUND`, `IDEMPOTENCY_KEY_REUSED`, `SHIPMENT_NOT_CANCELLABLE`, `INVALID_STATE_TRANSITION`, `WEBHOOK_EVENT_NOT_FOUND`, `WEBHOOK_EVENT_NOT_DEAD`, `INTERNAL_ERROR`
+
+</details>
+
 ## 주요 구현
 
 1. **멱등 예약** — 응답이 유실돼 서버가 같은 키로 다시 요청해도 송장이 하나만 생김

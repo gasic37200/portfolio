@@ -150,6 +150,60 @@ troubleshooting:
 3. **웹훅 수신 규칙** — API 키 검증 후 상태는 앞으로만 진행, 중복·역순은 200으로 무시
 4. **실시간 알림** — Kafka 이벤트는 이벤트 키 UNIQUE로 중복을 막고, 상대가 한 일만 알림. SSE로는 신호만 보내 화면이 다시 조회하게 하고, 운영 Nginx에 SSE 전용 설정
 
+<details>
+<summary><strong>담당 API 명세 보기</strong></summary>
+
+**알림** — 모두 로그인(JWT) 필요
+
+| 메서드 | 경로 | 설명 |
+| --- | --- | --- |
+| GET | `/api/v1/notifications` | 내 알림 목록 (`isRead`, `page`, `size`) |
+| GET | `/api/v1/notifications/subscribe` | SSE 구독. `unread` 이벤트로 안 읽은 수 전달, 30초마다 ping, `X-Accel-Buffering: no` |
+| GET | `/api/v1/notifications/unread-count` | 안 읽은 알림 수 |
+| PATCH | `/api/v1/notifications/{id}` | 한 건 읽음 처리 (`{ "isRead": true }`) |
+| PATCH | `/api/v1/notifications` | 전체 읽음 처리, 204 |
+
+남의 알림 id로 요청해도 `NOTIFICATION_NOT_FOUND`(404)를 돌려줘, 알림이 있는지 자체를 알려 주지 않습니다. `isRead=false`는 `ONLY_READ_SUPPORTED`(400)입니다.
+
+**택배사 웹훅**
+
+| 메서드 | 경로 | 설명 |
+| --- | --- | --- |
+| POST | `/api/v1/webhooks/courier` | 택배사 상태 변경 수신. JWT 대신 `X-Api-Key`를 상수 시간 비교로 검증, 틀리면 401 |
+
+요청은 `eventId`, `courierOrderNo`, `trackingNo`, `status`(PICKED_UP / IN_TRANSIT / DELIVERED), `occurredAt`입니다. 중복·역순·모르는 주문번호도 200으로 답해 택배사가 다시 보내지 않게 하고, 로그만 남깁니다.
+
+**배송** — 배송 전용 공개 API는 없고, 배송 상태와 단계별 시각은 주문 상세·판매 주문 상세에 함께 내려갑니다. 수거 뒤 취소(`SHIPMENT_NOT_CANCELABLE`), 배송 완료 전 구매 확정(`SHIPMENT_NOT_DELIVERED`)은 409로 막습니다.
+
+**상태값과 이벤트**
+
+- 배송 상태: `READY → BOOKED → PICKED_UP → IN_TRANSIT → DELIVERED`, 취소 시 `CANCELLED`
+- 배송이 발행하는 Kafka 토픽: `market.shipment-status-changed.v1`, `market.shipment-picked-up.v1`(정산이 구독)
+- 알림 모듈은 배송 상태 변경과 주문 쪽 토픽(결제, 취소, 구매 확정, 자동 구매 확정) 5개를 구독해 판매자·구매자 알림 12종을 만듭니다
+
+모의 택배사 쪽 API(예약·조회·취소, 관리자용 강제 진행·웹훅 재전송)는 [404-express](/projects/404-express)에 정리했습니다.
+
+</details>
+
+<details>
+<summary><strong>설계 결정 기록 보기</strong></summary>
+
+| 결정 | 이유 |
+| --- | --- |
+| 운영 Redis는 ElastiCache 대신 EC2 위 Docker | 교육 과정 AWS 계정에서 관리형 서비스는 별도 문의가 필요하고, 세미 프로젝트 규모에 충분 |
+| 코드 패키지명은 `justcommit` 유지, 컨테이너·DB·앱 이름만 `replant` | 패키지명을 바꾸면 팀원 브랜치 전체와 충돌 |
+| develop 보호 규칙과 CI 규칙을 분리 | 관리자 예외가 규칙 묶음 전체를 건너뛰므로, 직접 머지할 때도 CI는 반드시 돌게 하려고 |
+| 택배사 재시도는 별도 API 대신 멱등 설계로 처리, Flyway는 최종 프로젝트로 | 멘토링 반영 |
+| Redis 키는 `도메인:용도:식별자`, 모든 키에 TTL, 토큰은 해시로 저장 | 메모리가 차도 키를 지우지 않는 설정(noeviction)이라 만료를 강제 |
+| 택배 예약을 결제 커밋 뒤로 분리 (#129) | 결제가 롤백돼도 택배 예약이 남는 문제. 남은 한계는 응답 지연 |
+| 배송비 0원 방어 코드를 넣지 않음 | 무료배송 정책이 없어 배송비는 항상 0보다 큼 |
+| 수거 시점에 배송비 정산 이벤트 발행 (#151) | 수거 전까지만 취소할 수 있으므로 수거가 배송비 확정 시점 |
+| 구매자가 직접 취소한 주문은 구매자에게 알리지 않음 (#212) | 상대가 한 일만 알림 |
+
+**팀 규칙** — develop 기본 브랜치, squash 머지만 허용, 승인 1명과 CI(`./gradlew build`) 통과 필수. 커밋·PR 제목은 `Feat: [모듈] 내용 (#이슈)`. 다른 모듈의 Repository·Entity는 직접 참조하지 않고 공개 API·DTO와 ID로만 참조하며, 비동기 이벤트는 Kafka로만 처리합니다.
+
+</details>
+
 ## AI 활용
 
 팀 프로젝트 전체를 Claude Code와 함께 진행했고, **한 세션이 한 가지 일에만 집중하도록** 역할별로 세션을 나눠 썼습니다.
