@@ -60,6 +60,10 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 자료는 해당 프로젝트를 작업한 다른 Claude 세션에 `SendMessage`로 요청해 받는다(세션 목록은 `list_sessions`). 받은 내용은 저장소 git log, GitHub PR(`gh`), 테스트 실행으로 숫자와 작성자를 확인한 뒤 쓴다. 팀 프로젝트는 팀원 작업과 본인 작업을 구분하고, 팀원 이름은 쓰지 않는다.
 
+## 이슈·PR 번호
+
+본문의 `#123`은 그대로 두지 말고 `[#123](저장소/issues/123)` 링크로 쓴다(GitHub가 PR 번호면 /pull/로 넘겨 준다). 면접관이 눌러서 확인할 수 있어야 한다. 트러블슈팅 박스는 `<Troubleshooting items={frontmatter.troubleshooting} repo={frontmatter.repoUrl} />`로 쓰면 frontmatter 문장 안의 `#123`이 자동으로 링크가 된다.
+
 ## 트러블슈팅 박스
 
 프로젝트 frontmatter의 `troubleshooting` 배열이 **문제 → 원인 → 해결 과정 → 결과** 박스로 렌더된다.

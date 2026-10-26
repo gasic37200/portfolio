@@ -6,9 +6,18 @@ type Props = {
   solution: string
   result: string
   post?: string
+  repo?: string
 }
 
-const { title, problem, cause, solution, result, post } = Astro.props
+const { title, problem, cause, solution, result, post, repo } = Astro.props
+
+// Split "#123" references into links to the repo's issue (GitHub redirects PR numbers to /pull/)
+function parts(text: string) {
+  if (!repo) return [{ text }]
+  return text.split(/(#\d+)/).filter(Boolean).map((piece) =>
+    /^#\d+$/.test(piece) ? { text: piece, href: `${repo}/issues/${piece.slice(1)}` } : { text: piece }
+  )
+}
 
 const steps = [
   { label: "문제", text: problem, dot: "bg-rose-500", tone: "text-rose-600 dark:text-rose-400" },
@@ -39,7 +48,11 @@ const steps = [
         </div>
         <div>
           <p class={`text-xs font-semibold tracking-wide ${step.tone}`}>{step.label}</p>
-          <p class="mt-0.5 text-sm leading-relaxed text-black/80 dark:text-white/80">{step.text}</p>
+          <p class="mt-0.5 text-sm leading-relaxed text-black/80 dark:text-white/80">
+            {parts(step.text).map((part) => part.href
+              ? <a href={part.href} target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-black hover:dark:text-white">{part.text}</a>
+              : part.text)}
+          </p>
         </div>
       </li>
     ))}

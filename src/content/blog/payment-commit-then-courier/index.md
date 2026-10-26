@@ -16,7 +16,7 @@ troubleshooting:
 
 ## 상황
 
-RePlant Market에서 결제가 완료되면 배송을 만들고, 외부 택배사(모의 택배사 [404-express](/projects/404-express))에 택배 예약을 요청해 송장번호를 받습니다. 처음 구현(#103)에서는 이 예약 호출이 **결제 트랜잭션 안**에 있었습니다.
+RePlant Market에서 결제가 완료되면 배송을 만들고, 외부 택배사(모의 택배사 [404-express](/projects/404-express))에 택배 예약을 요청해 송장번호를 받습니다. 처음 구현([#103](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/103))에서는 이 예약 호출이 **결제 트랜잭션 안**에 있었습니다.
 
 ## 문제
 
@@ -24,13 +24,13 @@ RePlant Market에서 결제가 완료되면 배송을 만들고, 외부 택배�
 
 > 외부 API 호출은 DB 트랜잭션이 되돌려 줄 수 없다. 트랜잭션 안에 두면 "같이 성공하고 같이 실패한다"는 착각만 생긴다.
 
-## 해결 (#129, #149)
+## 해결 ([#129](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/129), [#149](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/149))
 
 호출 순서를 **"먼저 커밋, 그다음 외부 호출"** 로 바꿨습니다.
 
 1. 결제 트랜잭션에서는 배송 행을 `READY` 상태로, 택배사 멱등키(`courierOrderNo`)와 함께 저장만 합니다.
 2. 결제가 커밋된 뒤에 택배사 예약 API를 호출합니다. 이때 멱등키를 함께 보내, 같은 요청이 두 번 가도 송장은 하나만 생깁니다.
-3. 예약이 실패하면 배송은 `READY`로 남습니다. **5분마다 도는 스케줄러가 같은 멱등키로 재예약**합니다(#149).
+3. 예약이 실패하면 배송은 `READY`로 남습니다. **5분마다 도는 스케줄러가 같은 멱등키로 재예약**합니다([#149](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/149)).
 
 결제가 롤백되면 배송 행도 함께 사라지므로 예약 요청 자체가 나가지 않고, 커밋 후 예약이 실패해도 스케줄러가 다시 시도합니다.
 
