@@ -53,11 +53,11 @@ troubleshooting:
 
 | 구분 | 기술 |
 | --- | --- |
+| Front | Vite, React |
 | Backend | Java 25, Spring Boot 4, Spring Modulith(모듈러 모놀리스) |
 | Data | PostgreSQL, Redis, Kafka, S3 |
 | 실시간 | SSE |
 | Infra | AWS EC2, Docker Compose, Nginx, GitHub Actions |
-| Front | Vite, React |
 
 ## 시연 영상
 
@@ -65,17 +65,17 @@ troubleshooting:
 
 서비스 소개 → 상품 둘러보기·등록 → 장바구니와 결제 → 판매자 주문 받기 → 배송 취소와 진행 → 구매 확정과 정산 순서로 보여 줍니다.
 
-<Planning summary="전체 흐름 · 유스케이스 · 이벤트 스토밍 · 모듈 경계 · ERD 변천 · 서비스 정책">
+<Planning summary="전체 흐름 · 유스케이스 · 이벤트 스토밍 · 모듈 경계 · ERD · 와이어프레임 · 컨벤션 · 서비스 정책 · 참고 링크">
 
-**전체 흐름** — 가입부터 정산까지, 구매자·판매자·시스템·외부 연동이 각 단계에서 하는 일입니다.
+**전체 흐름** — 참여자(구매자·판매자·시스템·외부 연동)별로 가입부터 정산까지 각 단계에서 하는 일을 나눴습니다.
 
 ![RePlant 전체 흐름: 가입부터 정산까지 구매자·판매자·시스템·외부 연동의 단계](/images/projects/replant/overall-flow.webp)
 
-**유스케이스** — 비회원·회원·판매자 세 액터와 외부 시스템(카카오 OAuth, 모의 택배 API, 토스페이먼츠)으로 기능 범위를 나눴습니다.
+**유스케이스** — 액터(비회원·회원·판매자)와 외부 시스템(카카오 OAuth, 모의 택배 API, 토스페이먼츠)으로 기능 범위를 나눴습니다.
 
 ![RePlant 유스케이스 다이어그램](/images/projects/replant/usecase.webp)
 
-**이벤트 스토밍** — 도메인별로 이벤트·커맨드·액터·정책을 붙여 흐름을 맞추고, 논의가 필요한 지점(핫스팟)을 따로 표시했습니다.
+**이벤트 스토밍** — 스티커(이벤트·커맨드·액터·정책)를 도메인별로 붙여 흐름을 맞추고, 논의가 필요한 지점(핫스팟)은 Figma 댓글로 달아 정리했습니다.
 
 ![RePlant 이벤트 스토밍 보드](/images/projects/replant/event-storming.webp)
 
@@ -83,11 +83,22 @@ troubleshooting:
 
 ![RePlant 바운디드 컨텍스트와 컨텍스트 맵](/images/projects/replant/bounded-context.webp)
 
-**ERD 변천** — 초안에서 모듈별로 테이블을 다시 묶은 뒤 최종 ERD로 정리했습니다. 최종본은 [ERD Cloud](https://www.erdcloud.com/d/gbt2Wj3Y7SuoN4RN7)에서 볼 수 있습니다.
+**ERD 변천** — 초안에서 모듈별로 테이블을 다시 묶은 뒤 최종 ERD로 정리했습니다.
 
 ![RePlant ERD 초안부터 모듈별 정리본, 최종본까지](/images/projects/replant/erd-evolution.webp)
 
-기획 전체 보드(초기 주제, 이벤트 스토밍, ERD, 팀 규칙)는 [FigJam](https://www.figma.com/board/rnZsalDwY3qwQA0zXaRz6J/)에 남아 있습니다.
+**와이어프레임** — 화면 43개를 빈 상태·실패 상태까지 나눠 그렸습니다. 아래는 그중 메인, 주문 상세, 판매 주문 상세, 알림입니다.
+
+![RePlant 와이어프레임: 메인, 주문 상세, 판매 주문 상세, 알림](/images/projects/replant/wireframes.webp)
+
+**협업 컨벤션** — 하위 페이지마다 달랐던 규칙(브랜치 이름 3가지, 커밋 타입 목록 4가지)을 실제 레포 설정 기준으로 한 문서에 정리했습니다.
+
+- **이슈 단위** — 이벤트 스토밍의 커맨드 1개 = 이슈 1개 = PR 1개(1~3일 분량)
+- **작업 흐름** — 이슈 생성 → 브랜치 `이름/모듈-이슈번호-기능명` → PR 본문 `Closes #번호` → 승인 1명 → squash 머지. GitHub Projects 보드 카드는 이슈·PR 상태로 자동 이동
+- **타입** — Feat · Fix · Refactor · Test · Docs · Chore 6개로 이슈 라벨·커밋·PR 제목 통일
+- **머지** — 작업 브랜치 → develop은 squash, develop → main은 merge commit. 두 브랜치 모두 직접 push·강제 push·삭제 금지
+- **모듈 간 협업** — 다른 모듈에 필요한 건 요청 이슈로 남기고, 이벤트·공개 API는 계약(이벤트 클래스·인터페이스)만 담은 PR을 먼저 머지해 병렬로 작업. 공용 파일(`build.gradle`, `application.yml`, common)은 별도 PR
+- **Redis 키** — `도메인:용도:식별자`, 모든 키에 TTL, 토큰은 해시로 저장
 
 **주요 서비스 정책**
 
@@ -101,6 +112,13 @@ troubleshooting:
 | 상품 사진 1~10장 | 최소 1장 필수, 첫 번째 사진이 대표 사진 |
 | 주문 취소 | 배송 준비·접수 완료 상태에서만 부분 취소 가능 |
 | 자기 상품 구매 불가 | 판매자는 자신이 등록한 상품을 구매할 수 없음 |
+
+**참고 링크**
+
+- [FigJam 기획 보드](https://www.figma.com/board/rnZsalDwY3qwQA0zXaRz6J/) — 초기 주제, 이벤트 스토밍, ERD, 팀 규칙
+- [ERD Cloud 최종 ERD](https://www.erdcloud.com/d/gbt2Wj3Y7SuoN4RN7)
+- [서비스 정책 문서](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/blob/develop/docs/policy.md) · [모듈 구조 문서](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/blob/develop/docs/module-architecture.md)
+- [백엔드 저장소](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE) · [프론트 저장소](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_FE)
 
 </Planning>
 
