@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#059669"/>
+    </marker>
+  </defs>
+  <rect width="960" height="420" rx="16" fill="#f8fafc"/>
+  <line x1="320" y1="24" x2="320" y2="396" stroke="#e2e8f0" stroke-width="2"/>
+  <line x1="640" y1="24" x2="640" y2="396" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- A: resident role sessions, organically connected -->
+  <text x="160" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">A. 역할별 상주 세션</text>
+  <text x="160" y="60" text-anchor="middle" font-size="12" fill="#64748b">내가 쓴 방식</text>
+  <circle cx="160" cy="96" r="17" fill="#e2e8f0"/>
+  <text x="160" y="101" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">나</text>
+  <text x="184" y="101" font-size="11" fill="#64748b">아무 세션에서나 대화</text>
+  <g stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 4" fill="none">
+    <path d="M150 112 L96 156"/><path d="M170 112 L224 156"/>
+  </g>
+  <!-- mesh of send-to links -->
+  <g stroke="#93c5fd" stroke-width="1.4" fill="none">
+    <path d="M90 186 L230 186"/><path d="M90 186 L90 266"/><path d="M230 186 L230 266"/>
+    <path d="M90 266 L230 266"/><path d="M90 186 L230 266"/><path d="M230 186 L90 266"/>
+    <path d="M160 186 L160 266"/>
+  </g>
+  <g font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">
+    <rect x="44" y="166" width="92" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="90" y="190">워크용</text>
+    <rect x="114" y="166" width="92" height="38" rx="8" fill="#fff" stroke="#cbd5e1" opacity="0"/>
+    <rect x="184" y="166" width="92" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="230" y="190">인프라용</text>
+    <rect x="44" y="246" width="92" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="90" y="270">정리용</text>
+    <rect x="184" y="246" width="92" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="230" y="270">프론트용</text>
+    <rect x="124" y="206" width="72" height="40" rx="20" fill="#2563eb"/><text x="160" y="224" fill="#fff" font-size="11">send-to</text><text x="160" y="238" fill="#dbeafe" font-size="10">대화 분석</text>
+  </g>
+  <text x="160" y="308" text-anchor="middle" font-size="11" fill="#2563eb">"이건 인프라용 담당이니 넘길게요"</text>
+  <rect x="24" y="332" width="272" height="52" rx="8" fill="#fef3c7"/>
+  <text x="160" y="353" text-anchor="middle" font-size="11.5" fill="#92400e">모든 세션이 서로 연결되고</text>
+  <text x="160" y="371" text-anchor="middle" font-size="11.5" fill="#92400e">대화가 계속 쌓임 → 압축 1~3회</text>
+
+  <!-- B: main + disposable issue sessions -->
+  <text x="480" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">B. 메인 + 이슈별 일회용</text>
+  <text x="480" y="60" text-anchor="middle" font-size="12" fill="#64748b">다른 팀장의 방식</text>
+  <circle cx="480" cy="96" r="17" fill="#e2e8f0"/>
+  <text x="480" y="101" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">나</text>
+  <path d="M480 113 L480 152" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="490" y="138" font-size="11" fill="#64748b">이슈만 말함</text>
+  <rect x="425" y="156" width="110" height="40" rx="8" fill="#0f172a"/>
+  <text x="480" y="181" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">메인 세션</text>
+  <g stroke="#64748b" stroke-width="1.5" fill="none">
+    <path d="M452 196 L392 240" marker-end="url(#a)"/>
+    <path d="M480 196 L480 240" marker-end="url(#a)"/>
+    <path d="M508 196 L568 240" marker-end="url(#a)"/>
+  </g>
+  <g font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">
+    <rect x="348" y="242" width="80" height="38" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/><text x="388" y="266">이슈 #1</text>
+    <rect x="440" y="242" width="80" height="38" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/><text x="480" y="266">이슈 #2</text>
+    <rect x="532" y="242" width="80" height="38" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/><text x="572" y="266">이슈 #3</text>
+  </g>
+  <path d="M600 242 C626 214 610 186 538 178" stroke="#059669" stroke-width="1.5" fill="none" marker-end="url(#g)"/>
+  
+  <text x="480" y="308" text-anchor="middle" font-size="11" fill="#64748b">메인이 세션을 만들고, <tspan fill="#059669">결과 요약</tspan>을 돌려받는다</text>
+  <rect x="344" y="332" width="272" height="52" rx="8" fill="#d1fae5"/>
+  <text x="480" y="353" text-anchor="middle" font-size="11.5" fill="#065f46">메인만 상주</text>
+  <text x="480" y="371" text-anchor="middle" font-size="11.5" fill="#065f46">이슈 세션은 짧게 쓰고 정리</text>
+
+  <!-- C: new thread per task -->
+  <text x="800" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">C. 작업마다 새 스레드</text>
+  <text x="800" y="60" text-anchor="middle" font-size="12" fill="#64748b">친구의 방식</text>
+  <circle cx="800" cy="96" r="17" fill="#e2e8f0"/>
+  <text x="800" y="101" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">나</text>
+  <path d="M800 113 L800 152" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="810" y="138" font-size="11" fill="#64748b">직접 새로 엶</text>
+  <g font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">
+    <rect x="740" y="156" width="120" height="38" rx="8" fill="#fff" stroke="#0f172a" stroke-width="1.5"/><text x="800" y="180">작업 3 스레드</text>
+    <rect x="740" y="206" width="120" height="34" rx="8" fill="#fff" stroke="#cbd5e1" opacity="0.7"/><text x="800" y="228" fill="#94a3b8">작업 2 (지움)</text>
+    <rect x="740" y="250" width="120" height="34" rx="8" fill="#fff" stroke="#cbd5e1" opacity="0.5"/><text x="800" y="272" fill="#cbd5e1">작업 1 (지움)</text>
+  </g>
+  <text x="800" y="308" text-anchor="middle" font-size="11" fill="#64748b">/clear · 40% 전에 /compact</text>
+  <rect x="664" y="332" width="272" height="52" rx="8" fill="#e0e7ff"/>
+  <text x="800" y="353" text-anchor="middle" font-size="11.5" fill="#3730a3">오케스트레이션 없이</text>
+  <text x="800" y="371" text-anchor="middle" font-size="11.5" fill="#3730a3">한 번에 한 작업, 컨텍스트를 직접 관리</text>
+</svg>

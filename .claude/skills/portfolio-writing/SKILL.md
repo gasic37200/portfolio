@@ -72,7 +72,7 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 - frontmatter: `title`, `summary`, `date`, `tags`, `draft`.
 - `draft: true`는 임시 글이다. `npm run dev`에서만 "임시 글" 표시와 함께 보이고, 빌드(실제 사이트)·검색·RSS에서는 빠진다. 공개는 `draft` 줄을 지우는 것.
-- 저장소가 공개라 임시 글은 **git에도 올리지 않는다.** 글 폴더와 그림 폴더(`public/images/posts/<slug>/`)를 `.gitignore`의 "unpublished blog drafts" 아래에 추가해 이 PC에만 둔다. 공개할 때 그 줄을 지우고 `draft` 줄도 지운 뒤 커밋한다. 그래서 클라우드 세션에서는 임시 글을 볼 수 없다.
+- 임시 글도 `draft: true`인 채로 git에 올린다(2026-10-26 사용자 결정: 백업과 클라우드 세션 작업을 위해). 실제 사이트에는 나오지 않지만 저장소가 공개라 GitHub에서는 원문이 보인다. 그래서 올리기 전에 팀원 이름·연락처·내부 경로·키가 없는지 확인한다. 공개는 `draft` 줄을 지우는 것.
 - 지금 임시 글: `session-orchestration-1`, `session-orchestration-2` (시리즈, 그림은 `public/images/posts/session-orchestration/`). 1편을 먼저 공개한다.
 - 사용자는 블로그를 처음 쓴다. 초안을 잡을 때는 대화에서 나온 사실과 사용자의 생각만 쓰고, 직접 경험이 필요한 자리는 `- [ ]` 체크 항목으로 비워 둔다. 맨 위 HTML 주석에 작성 메모를 남긴다.
 - 사용자의 의견을 대신 결론 내리지 않는다. 결론·소감 섹션은 비워 둔다.

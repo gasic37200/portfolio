@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#059669"/>
+    </marker>
+    <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+  <rect width="860" height="440" rx="16" fill="#f8fafc"/>
+  <text x="430" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">메인도 갈아 끼울 수 있게: 현황판과 최신화 스레드</text>
+
+  <!-- Main (current) -->
+  <rect x="60" y="78" width="170" height="64" rx="12" fill="#0f172a"/>
+  <text x="145" y="106" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">메인 세션</text>
+  <text x="145" y="126" text-anchor="middle" font-size="11" fill="#cbd5e1">지휘만 · 직접 작업 안 함</text>
+
+  <!-- Sub sessions -->
+  <g font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">
+    <rect x="340" y="70" width="124" height="38" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/><text x="402" y="94">서브: 이슈 #12</text>
+    <rect x="340" y="116" width="124" height="38" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/><text x="402" y="140">서브: 이슈 #13</text>
+  </g>
+  <text x="402" y="172" text-anchor="middle" font-size="11" fill="#64748b">별도 작업 공간에서 일함</text>
+
+  <!-- main -> sub -->
+  <path d="M232 100 L336 92" stroke="#64748b" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="284" y="84" text-anchor="middle" font-size="11" fill="#64748b">① 이슈 맡김</text>
+  <!-- sub -> main: signal -->
+  <path d="M336 136 L234 124" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#b)"/>
+  <text x="284" y="146" text-anchor="middle" font-size="11" fill="#2563eb">③ 신호만</text>
+  <text x="284" y="160" text-anchor="middle" font-size="10" fill="#2563eb">"#12 완료, 기록함"</text>
+
+  <!-- Board -->
+  <rect x="560" y="64" width="250" height="150" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="685" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">현황판</text>
+  <text x="685" y="108" text-anchor="middle" font-size="11" fill="#059669">브랜치 밖 · 상태의 원본</text>
+  <rect x="578" y="120" width="214" height="36" rx="8" fill="#fff" stroke="#a7f3d0"/>
+  <text x="685" y="136" text-anchor="middle" font-size="11.5" font-weight="600" fill="#065f46">GitHub 이슈</text>
+  <text x="685" y="150" text-anchor="middle" font-size="10" fill="#64748b">서브가 자기 이슈에 기록 (충돌 없음)</text>
+  <rect x="578" y="164" width="214" height="36" rx="8" fill="#fff" stroke="#a7f3d0"/>
+  <text x="685" y="180" text-anchor="middle" font-size="11.5" font-weight="600" fill="#065f46">요약판 BOARD.md</text>
+  <text x="685" y="194" text-anchor="middle" font-size="10" fill="#64748b">최신화 스레드만 고침</text>
+  <!-- sub -> board -->
+  <path d="M466 110 L574 136" stroke="#059669" stroke-width="1.6" marker-end="url(#g)"/>
+  <text x="520" y="110" text-anchor="middle" font-size="11" fill="#059669">② 작업 기록</text>
+
+  <!-- Refresh thread -->
+  <rect x="560" y="290" width="250" height="64" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="685" y="316" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">최신화 스레드</text>
+  <text x="685" y="336" text-anchor="middle" font-size="11" fill="#6d28d9">현황판 ↔ git·PR 대조 → 요약판 정리</text>
+  <path d="M685 216 L685 286" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#p)"/>
+  <text x="695" y="256" font-size="11" fill="#7c3aed">④ 읽고 정리</text>
+
+  <!-- New main -->
+  <rect x="60" y="290" width="170" height="64" rx="12" fill="#0f172a"/>
+  <text x="145" y="318" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">새 메인 세션</text>
+  <text x="145" y="338" text-anchor="middle" font-size="11" fill="#cbd5e1">메인 역할 스킬 + 요약판</text>
+  <path d="M556 322 L234 322" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#p)"/>
+  <text x="395" y="312" text-anchor="middle" font-size="11" fill="#7c3aed">⑤ 새 메인으로 이어받음</text>
+
+  <!-- old main archived -->
+  <path d="M145 144 L145 286" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="4 5" marker-end="url(#a)"/>
+  <text x="155" y="214" font-size="11" fill="#94a3b8">이전 메인은 보관</text>
+  <text x="155" y="230" font-size="11" fill="#94a3b8">(압축하지 않음)</text>
+
+  <rect x="40" y="380" width="780" height="40" rx="8" fill="#fef3c7"/>
+  <text x="430" y="405" text-anchor="middle" font-size="12" fill="#92400e">최신화 시점: 메인 컨텍스트 약 40% · 이슈 몇 개 완료 후 · 하루 한 번 중 하나로 정한다</text>
+</svg>

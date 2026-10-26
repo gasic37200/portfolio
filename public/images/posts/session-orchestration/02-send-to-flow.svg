@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#059669"/>
+    </marker>
+  </defs>
+  <rect width="760" height="320" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">send-to 스킬로 세션 사이에 일을 넘기는 흐름</text>
+
+  <!-- Sender -->
+  <rect x="40" y="96" width="170" height="96" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="125" y="128" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">워크용</text>
+  <text x="125" y="150" text-anchor="middle" font-size="11" fill="#64748b">보내는 세션</text>
+  <g font-size="11" fill="#334155">
+    <circle cx="58" cy="210" r="9" fill="#2563eb"/><text x="58" y="214" text-anchor="middle" fill="#fff" font-weight="700">1</text>
+    <text x="72" y="214">"인프라용 담당이에요. 보낼까요?"</text>
+    <circle cx="58" cy="236" r="9" fill="#2563eb"/><text x="58" y="240" text-anchor="middle" fill="#fff" font-weight="700">2</text>
+    <text x="72" y="240">세션 목록에서 제목으로 찾기</text>
+  </g>
+
+  <!-- Receiver -->
+  <rect x="550" y="96" width="170" height="96" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="635" y="128" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">인프라용</text>
+  <text x="635" y="150" text-anchor="middle" font-size="11" fill="#64748b">받는 세션 (대화를 모름)</text>
+  <g font-size="11" fill="#334155">
+    <circle cx="568" cy="210" r="9" fill="#2563eb"/><text x="568" y="214" text-anchor="middle" fill="#fff" font-weight="700">4</text>
+    <text x="582" y="214">git·PR로 현재 상태부터 확인</text>
+    <circle cx="568" cy="236" r="9" fill="#2563eb"/><text x="568" y="240" text-anchor="middle" fill="#fff" font-weight="700">5</text>
+    <text x="582" y="240">작업 후 완료 보고</text>
+  </g>
+
+  <!-- Message -->
+  <path d="M212 124 L546 124" stroke="#2563eb" stroke-width="2" marker-end="url(#b)"/>
+  <rect x="262" y="78" width="236" height="34" rx="17" fill="#dbeafe"/>
+  <circle cx="282" cy="95" r="9" fill="#2563eb"/><text x="282" y="99" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">3</text>
+  <text x="298" y="99" font-size="12" fill="#1e3a8a">요약 메시지: 요청 · 맥락 · 다음 할 일</text>
+
+  <!-- Report -->
+  <path d="M548 168 L214 168" stroke="#059669" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#g)"/>
+  <text x="380" y="160" text-anchor="middle" font-size="12" fill="#065f46">[완료 보고: 인프라용 → 워크용]</text>
+
+  <rect x="40" y="268" width="680" height="34" rx="8" fill="#fef3c7"/>
+  <text x="380" y="290" text-anchor="middle" font-size="12" fill="#92400e">받는 세션이 쉬고 있으면 메시지가 새 턴으로 들어가고, 그 세션의 전체 대화를 다시 읽는다 (공식 문서)</text>
+</svg>

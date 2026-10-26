@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="760" height="360" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">세션 9개는 모두 한 세션에서 갈라졌다</text>
+
+  <rect x="230" y="58" width="300" height="52" rx="10" fill="#0f172a"/>
+  <text x="380" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">기획 대화 세션</text>
+  <text x="380" y="99" text-anchor="middle" font-size="11" fill="#cbd5e1">10/01 ~ 10/07 · 공통 기록 5,162개</text>
+
+  <path d="M380 110 L380 146" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="392" y="133" font-size="11" fill="#64748b">포크 = 대화를 통째로 복사</text>
+
+  <g stroke="#cbd5e1" fill="none" stroke-width="1.5">
+    <path d="M110 150 L650 150"/>
+    <path d="M110 150 L110 164"/><path d="M290 150 L290 164"/><path d="M470 150 L470 164"/><path d="M650 150 L650 164"/>
+  </g>
+  <g font-size="13" font-weight="600" text-anchor="middle" fill="#0f172a">
+    <rect x="60" y="164" width="100" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="110" y="188">정리용</text>
+    <rect x="240" y="164" width="100" height="38" rx="8" fill="#fff" stroke="#2563eb" stroke-width="2"/><text x="290" y="188">워크용</text>
+    <rect x="420" y="164" width="100" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="470" y="188">인프라용</text>
+    <rect x="600" y="164" width="100" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="650" y="188">리뷰용</text>
+  </g>
+
+  <path d="M290 202 L290 230" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="302" y="222" font-size="11" fill="#2563eb">워크용에서 다시 포크</text>
+  <g stroke="#93c5fd" fill="none" stroke-width="1.5">
+    <path d="M110 238 L560 238"/>
+    <path d="M290 230 L290 238"/>
+    <path d="M110 238 L110 250"/><path d="M260 238 L260 250"/><path d="M410 238 L410 250"/><path d="M560 238 L560 250"/>
+  </g>
+  <g font-size="13" font-weight="600" text-anchor="middle" fill="#0f172a">
+    <rect x="60" y="250" width="100" height="38" rx="8" fill="#fef3c7" stroke="#d97706"/><text x="110" y="274">메인용</text>
+    <rect x="210" y="250" width="100" height="38" rx="8" fill="#fef3c7" stroke="#d97706"/><text x="260" y="274">기획용</text>
+    <rect x="360" y="250" width="100" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="410" y="274">프론트용</text>
+    <rect x="510" y="250" width="100" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="560" y="274">사이드 채팅</text>
+  </g>
+
+  <text x="720" y="296" text-anchor="end" font-size="10" fill="#94a3b8">첫 줄 세션들의 세부 포크 순서는 일부 추정</text>
+  <rect x="40" y="306" width="680" height="34" rx="8" fill="#fef3c7"/>
+  <text x="380" y="328" text-anchor="middle" font-size="12" fill="#92400e">압축 요약 속 "나는 워크용"까지 복사돼, 메인용·기획용이 자기를 워크용으로 알았다</text>
+</svg>

@@ -25,7 +25,3 @@ pnpm-debug.log*
 !.claude/skills/
 .omc/
 
-# unpublished blog drafts (kept local until ready to publish)
-src/content/posts/session-orchestration-1/
-src/content/posts/session-orchestration-2/
-public/images/posts/session-orchestration/
