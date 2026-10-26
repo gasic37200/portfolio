@@ -229,6 +229,41 @@ troubleshooting:
 
 </details>
 
+## 인프라
+
+EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Docker Compose로 올리고, 외부에는 Nginx의 80/443만 열었습니다.
+
+| 구성 | 실행 방식 | 메모리 |
+| --- | --- | --- |
+| Spring 앱 | 컨테이너 (멀티스테이지 빌드, root가 아닌 사용자로 실행) | 1GB |
+| PostgreSQL 17 | 컨테이너 | 512MB |
+| Redis 8 | 컨테이너 | maxmemory 256MB |
+| Kafka 4.2 (KRaft 단일 노드) | 컨테이너 | 768MB |
+| 404-express | 별도 저장소의 별도 compose | 128MB |
+| Nginx | 호스트에 설치, HTTPS 종단 | — |
+| 프론트 | 일회용 Node 컨테이너로 빌드해 정적 파일로 배치 | — |
+
+- **모의 택배사 분리** — 404-express는 저장소와 compose가 따로라 배포 주기가 다릅니다. 외부 Docker 네트워크 `replant-net`을 한 번 만들어 두 compose가 함께 쓰고, 별칭(`replant-app`, `404-express`)으로 서로 호출합니다. 택배사는 포트를 하나도 열지 않아 같은 서버 안에서만 통신하고, 양쪽 `X-Api-Key`는 배포 스크립트가 같은 값으로 맞춥니다.
+- **포트 노출 최소화** — 앱·DB·Redis 포트는 모두 `127.0.0.1`에만 바인딩하고, DB는 SSH 터널로만 접속합니다. SSH는 본인 IP만 허용했습니다.
+- **Redis** — `requirepass`, `maxmemory 256mb`, `noeviction`, `appendonly yes`. 인증번호·토큰·멱등키를 담는 임시 저장소라 메모리가 차도 키를 지우지 않게 하고, 그 대신 모든 키에 TTL을 겁니다.
+- **Nginx** — Let's Encrypt 인증서(Certbot 자동 갱신), HTTP는 HTTPS로 리다이렉트, `/api`·OAuth 경로는 앱으로 프록시하고 나머지는 SPA로 응답합니다. SSE 경로만 따로 떼어 `proxy_buffering off`, `proxy_read_timeout 1h`를 주고, 앱도 `X-Accel-Buffering: no`와 30초 ping을 보냅니다(#209).
+- **배포** — 서버에서 `deploy.sh` 한 번으로 실행합니다(#165, #185). 비밀값 확인 → 기존 컨테이너 내림(볼륨 유지) → BE·택배사·FE 최신 코드 받기 → `.env.example` 대비 빠진 환경변수 검사 → 프론트 번들에 결제 키가 들어갔는지 검사 → Nginx 설정 재작성 → 기동 후 health 대기. 비밀값 원본은 서버의 권한 600 파일 하나에만 두고, S3는 EC2 IAM 역할로 접근해 AWS 키를 두지 않았습니다.
+- **CI** — PR마다 GitHub Actions로 빌드를 돌리고(#35), develop에는 빌드 통과를 예외 없는 필수 규칙으로 걸었습니다. CD는 아직 없고 배포는 수동입니다.
+
+<details>
+<summary><strong>운영하며 해결한 문제 보기</strong></summary>
+
+| 증상 | 원인 | 해결 |
+| --- | --- | --- |
+| Kafka가 unhealthy라 앱이 뜨지 않음 | CPU 크레딧이 바닥난 상태에서 10초마다 JVM을 띄우는 `kafka-topics.sh` 헬스체크가 시간 초과 | TCP 포트 검사로 교체 (#185) |
+| 첫 배포에서 DB 인증 실패 | PostgreSQL은 볼륨이 비어 있을 때만 계정을 만드는데, 예전 설정으로 만든 볼륨이 남아 있었음 | 볼륨 재생성 후 "DB 계정·암호화 키는 바꾸지 않는다" 주석 추가 (#185) |
+| 결제창 설정 오류가 재배포 때마다 재발 | 프론트 결제 키는 빌드 시점에 들어가는데 배포 스크립트가 넘기지 않음 | 스크립트가 키를 넣고 번들에 들어갔는지까지 검사 (#185) |
+| 새 환경변수 누락으로 기동 실패 | 서버 `.env`에 새 키가 반영되지 않음 | `.env.example`과 비교해 빠진 변수를 배포 전에 검사 (#185) |
+| Docker 빌드가 exit 127 | Windows에서 커밋된 `gradlew`의 CRLF 줄바꿈 | Dockerfile에서 변환 + `.gitattributes` (#165) |
+| 정산이 조용히 누락됨 | `ddl-auto: update`가 데이터가 있는 테이블에 NOT NULL 컬럼을 추가하지 못하고 경고만 남김 | 컬럼을 수동으로 추가하고 Kafka 오프셋을 되돌려 재처리 |
+
+</details>
+
 ## AI 활용
 
 팀 프로젝트 전체를 Claude Code와 함께 진행했고, **한 세션이 한 가지 일에만 집중하도록** 역할별로 세션을 나눠 썼습니다.
