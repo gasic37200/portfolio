@@ -49,6 +49,44 @@ troubleshooting:
 | Database | JPA, MySQL |
 | Data Collection | Selenium |
 
+<Planning summary="배경 · 요구사항 · 데이터 흐름 · 구현하지 못한 기능">
+
+<PlanItem title="배경">
+
+물가가 오르며 학식 수요가 늘었지만, 에브리타임의 학식 메뉴 확인 기능이 사라지면서 학생들은 학교 홈페이지 → 학식 아이콘 → 해당 주차 사이트 → 요일별 메뉴까지 여러 단계를 거쳐야 했습니다.
+
+</PlanItem>
+
+<PlanItem title="요구사항">
+
+- 학교 홈페이지의 학식 메뉴를 크롤링해 MySQL에 저장한다
+- 저장된 메뉴를 페이지에 렌더링한다
+- 메뉴별 별점으로 평가를 남기고 확인한다
+- Spring Security와 JWT로 인증 구조를 만든다
+- JPA로 메뉴, 사용자, 평가 데이터를 관리한다
+- 문자·이메일 알림처럼 학식 정보를 보내는 기능으로 확장할 수 있어야 한다
+
+</PlanItem>
+
+<PlanItem title="데이터 흐름">
+
+**학교 홈페이지 → 크롤러 실행 → MySQL 저장 → Spring Boot 조회 → Thymeleaf 렌더링 → 메뉴별 별점**
+
+메뉴를 단순히 보여주는 데서 그치지 않고 학생들이 어떤 메뉴를 선호하는지 볼 수 있도록, 메뉴 데이터가 평가 데이터와 연결되게 저장 구조를 잡았습니다.
+
+</PlanItem>
+
+<PlanItem title="구현하지 못한 기능" links={[{ label: "GitHub", href: "https://github.com/gasic37200/DDING" }]}>
+
+- 카카오톡 아침 학식 알림 (문자 발송은 유료이거나 기업 계정 조건이 필요)
+- 대안으로 검토한 이메일 알림
+- 학식 게시판
+- 크롤러 자동 실행 스케줄러와 중복 데이터 정제
+
+</PlanItem>
+
+</Planning>
+
 ## 문제와 해결 방향
 
 > **문제:** 학식 수요는 늘었지만, 학생들은 매번 학교 홈페이지 → 학식 아이콘 → 주차 → 요일별 메뉴까지 여러 단계를 거쳐야 한다.
@@ -77,7 +115,7 @@ Spring Boot MVC 패턴으로 Controller, Service, Repository의 책임을 나누
 
 ## 트러블슈팅
 
-<Troubleshooting items={frontmatter.troubleshooting} />
+<Troubleshooting items={frontmatter.troubleshooting} repo={frontmatter.repoUrl} />
 
 ## 회고
 

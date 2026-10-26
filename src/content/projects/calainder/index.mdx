@@ -60,6 +60,42 @@ troubleshooting:
 | Data Collection | Playwright |
 | Deploy | Docker Compose, OCI, Nginx |
 
+<Planning summary="요구사항 · 유스케이스 · 시퀀스 · 화면 설계 전환">
+
+<PlanItem title="요구사항">
+
+- 텍스트, 대화 내용, 이미지 같은 비정형 입력만으로 일정을 등록한다
+- 입력에서 제목, 날짜, 시간을 자동으로 추출한다
+- 추출한 일정은 Google Calendar에 등록·동기화하고, 확인·수정·삭제도 Google Calendar에서 할 수 있다
+- E-Class 같은 외부 서비스의 과제 일정도 수집해 반영한다
+- 등록한 일정의 알림(리마인더)으로 확장할 수 있어야 한다
+
+</PlanItem>
+
+<PlanItem title="유스케이스" links={[{ label: "기획 글", href: "/blog/calainder-planning" }]}>
+
+액터(학생·직장인)와 외부 시스템(Google Calendar, E-Class)으로 일정 업로드·등록, 등록 일정 확인·관리, 과제 일정 업데이트, 알림(확장) 네 가지 유스케이스를 정리했습니다.
+
+![Calainder 유스케이스 다이어그램](/images/blog/calainder-planning/usecase.webp)
+
+</PlanItem>
+
+<PlanItem title="시퀀스" links={[{ label: "기획 글", href: "/blog/calainder-planning" }]}>
+
+일정 자동 등록(입력 → 서버 → AI 분석 → Google Calendar 등록)과 과제 일정 업데이트(요청 → 서버 → E-Class 크롤러 → Google Calendar 동기화) 두 흐름에, AI 분석 실패·캘린더 동기화 실패 시 오류 메시지와 재시도 안내까지 넣었습니다.
+
+![Calainder 시퀀스 다이어그램](/images/blog/calainder-planning/sequence.webp)
+
+</PlanItem>
+
+<PlanItem title="화면 설계 전환" links={[{ label: "기획 글", href: "/blog/calainder-planning" }]}>
+
+처음에는 웹사이트 안에 자체 달력을 만들고 Google Calendar 데이터를 불러와 관리하려 했습니다. 구체화하면서 일정을 일일이 관리하는 것보다 **텍스트·이미지로 AI에게 자연스럽게 요청하는 흐름**이 서비스의 핵심 가치에 맞다고 보고, 채팅형 입력 화면으로 바꿨습니다. 분석 결과는 카드로 보여 주고 바로 수정할 수 있게 했으며, 실제 확인·관리는 버튼으로 Google Calendar에 넘어가도록 단순화했습니다.
+
+</PlanItem>
+
+</Planning>
+
 ## 문제와 해결 방향
 
 > **문제:** 일정 정보는 메신저, 공지사항, 이미지 캡처처럼 흩어져 있는데, 이를 다시 정리해 캘린더에 입력하는 과정이 번거롭고 반복적이다.
@@ -89,16 +125,42 @@ troubleshooting:
 3. **E-Class 일정 수집** — 암호화된 로그인 정보로 크롤러를 호출하고, 고정 이벤트 ID로 중복 등록 방지
 4. **반복 일정과 리마인더** — 매일·매주·매달 반복 일정, 알림 설정을 Google Calendar 알림 옵션과 연결
 
+<details>
+<summary><strong>버전별 개선 이력 보기</strong></summary>
+
+| 버전 | 내용 |
+| --- | --- |
+| v1.0.0 | AI, 크롤링, 일정 CRUD와 캘린더 UI 흐름 개선 |
+| v1.1.0 | AI 요청 UX와 이미지 오류 처리 개선 |
+| v1.2.0 | Docker 실행 환경과 크롤러 로그 개선 |
+| v1.2.1 | 약관 페이지 추가, 빌드·테스트 정리 |
+| v1.2.2 | 로그인 흐름 개선, AI 프롬프트 구조화, Google 심사 대응 문서·랜딩 보강 |
+| v1.3.0 | 일정 조회·수정 UX 개선, 리마인더 설정 흐름 정리, Google Calendar 연동 안정화 |
+| v1.4.0 | AI 다중 일정 추출, 크롤링 일정 중복 방지, 공용 피드백 API 연동, 모듈별 `.env` 기반 Docker Compose |
+| v1.4.1 | 모듈별 `.dockerignore`로 이미지에 환경변수·가상환경·캐시·빌드 결과 제외 |
+| v1.5.0 | 매일·매주·매달 반복 일정 생성·조회, 일정 하나만 또는 반복 전체 수정 범위 분리 |
+| v1.5.1 | FastAPI 모듈의 Uvicorn 선택 의존성 정리로 Spring Boot 연동 안정화 |
+| v1.5.2 | 비로그인 사용자가 피드백에 접근하면 Google 로그인으로 이동 |
+
+</details>
+
+## 기술 선택 이유
+
+| 결정 | 이유 |
+| --- | --- |
+| 일정의 최종 저장소를 자체 DB가 아닌 Google Calendar로 | 사용자가 실제로 쓰는 캘린더에 바로 연결되고, 계정·일정 테이블 없이 입력 → 분석 → 반영 흐름에 집중할 수 있음. 일정 히스토리나 분석 로그가 필요해지면 DB를 따로 두는 것으로 확장 |
+| Controller-Service-DTO/Util 구조 (Repository 계층 없음) | 저장을 Google Calendar가 맡아 데이터 접근 계층이 필요 없고, 요청 처리·비즈니스 로직·데이터 변환 책임만 나눔 |
+| 채팅형 입력 화면 | 자체 캘린더 UI보다 AI에게 요청하는 흐름이 서비스의 핵심 가치에 맞음. 일정 확인·관리는 익숙한 Google Calendar로 넘김 |
+| E-Class 로그인 정보를 AES 대칭키로 암호화해 크롤러에 전달 | 외부 모듈과 주고받는 과정에서 민감정보가 평문으로 오가지 않게 |
+| AI 분석·크롤링 요청을 비동기로 처리 | 외부 처리 시간이 길어 연쇄 호출이 응답을 붙잡을 수 있음. 이후 polling·큐 구조로 확장할 수 있게 방향을 잡음 |
+| 과목 + 과제 제목으로 고정 이벤트 ID 생성 | 크롤링을 반복해도 같은 과제는 새로 만들지 않고 수정해 중복 등록을 막음 |
+| 리마인더를 Google Calendar 알림 옵션과 연결 | 내부에 알림 데이터를 따로 저장하지 않고, 일정 등록과 알림 설정을 한 흐름으로 이음 |
+
 ## 트러블슈팅
 
-<Troubleshooting items={frontmatter.troubleshooting} />
+<Troubleshooting items={frontmatter.troubleshooting} repo={frontmatter.repoUrl} />
 
 ## 회고
 
 팀 프로젝트 당시에는 Git을 협업 도구로 충분히 활용하지 못했습니다. 프로젝트가 끝난 뒤 혼자 보완하면서 release/main 브랜치 분리, PR 반영, cherry-pick과 amend로 버전 이력을 관리하는 방법을 익혔고, 배포 역시 코드·인프라·네트워크·보안 설정이 함께 맞물려야 완성된다는 것을 직접 경험했습니다. 또 모바일 키보드 노출에 따른 viewport 변화와 인앱 브라우저의 Google 로그인 제한을 겪으며, 웹 서비스는 실제 사용 환경별 렌더링 특성까지 고려해야 한다는 점을 확인했습니다.
 
-## 기획
-
-문제 정의부터 요구사항, 유스케이스, 시퀀스, 그리고 화면을 자체 캘린더에서 **채팅형 입력으로 바꾼 이유**까지는 글이 길어서 따로 정리했습니다.
-
-→ **[Calainder 기획: 자체 캘린더 대신 채팅형 입력을 고른 이유](/blog/calainder-planning)**
