@@ -30,6 +30,13 @@ const blog = defineCollection({
     draft: z.boolean().optional(),
     projects: z.array(z.string()).optional(),
     troubleshooting: troubleshooting.omit({ title: true, post: true }).optional(),
+    // Decision record summary, rendered instead of the troubleshooting box when present
+    decision: z.object({
+      question: z.string(),
+      choice: z.string(),
+      reasons: z.array(z.string()),
+      tradeoff: z.string(),
+    }).optional(),
   }),
 })
 

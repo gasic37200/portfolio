@@ -7,6 +7,7 @@ import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
 import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
 import ArrowCard from "@components/ArrowCard"
 import TroubleshootingBox from "@components/TroubleshootingBox.astro"
+import DecisionBox from "@components/DecisionBox.astro"
 
 // Create the static blog pages
 export async function getStaticPaths() {
@@ -35,7 +36,12 @@ const related = (await getCollection("projects"))
   <BottomLayout>
     <div class="animate">
       <ArticleBottomLayout entry={post}>
-        {post.data.troubleshooting && (
+        {post.data.decision && (
+          <div slot="before" class="mb-10">
+            <DecisionBox {...post.data.decision} />
+          </div>
+        )}
+        {!post.data.decision && post.data.troubleshooting && (
           <div slot="before" class="mb-10">
             <TroubleshootingBox title="한눈에 보기" {...post.data.troubleshooting} />
           </div>

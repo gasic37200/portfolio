@@ -60,11 +60,11 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 ## 기술 기록 글
 
-트러블슈팅 중 면접에서 깊게 이야기할 만한 것(디버깅 과정, 설계 판단, 보안, 배포)을 글로 뺀다.
+트러블슈팅 박스가 "무슨 일이 있었고 어떻게 고쳤나"라면, 기술 기록은 **"여러 방법 중 왜 이 방법을 골랐나"**를 쓰는 결정 기록이다(2026-10-27 멘토 피드백). 양식은 [project-template.md](project-template.md) "3. 기술 기록 양식"을 따른다. 기준 글은 `payment-commit-then-courier`.
 
-- frontmatter: `title`(현상이나 결정을 드러내는 제목), `summary`, `date`, `tags`(`트러블슈팅`/`설계`/`배포` 중 하나 + 기술명), `projects: ["slug", …]`(연결할 프로젝트, 여러 개 가능), `troubleshooting:`(글 상단 "한눈에 보기" 박스; 위 형식에서 `title`, `post` 없이 네 칸만).
-- 본문: `## 상황` → `## 원인` (또는 원인을 좁혀간 과정) → `## 해결` → `## 배운 점` (`~다` 체 bullet).
-- `projects`에 적은 프로젝트 페이지에 글이 자동 연결되고, 글 하단에 관련 프로젝트 카드가 붙는다.
+- frontmatter: `title`(결정의 질문을 드러내는 제목), `summary`, `date`, `tags`, `projects: ["slug", …]`, `decision:`(question·choice·reasons·tradeoff, 글 상단 요약 상자). 예전 글의 `troubleshooting:` 상자는 `decision`이 없을 때만 그려진다.
+- 선택지는 실제로 검토한 것만. 작업 세션(`SendMessage`)·PR 코멘트에서 확인하고, 없으면 사용자에게 묻는다.
+- 아직 결정 기록으로 바꾸지 않은 글: `crawler-duplicate-fixed-event-id`, `llm-relative-time`, `oci-docker-compose-deploy`, `participation-scope-by-match`, `phone-number-privacy`, `uvicorn-422-empty-body`, `grill-me-planning`. 바꿀 때 같은 양식으로.
 
 ## 블로그 (임시 글)
 
