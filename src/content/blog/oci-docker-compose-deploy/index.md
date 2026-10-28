@@ -16,7 +16,7 @@ decision:
     - "서비스 하나에 문제가 생겨도 같은 파일에서 그 서비스만 stop·up·build할 수 있어 관리 지점이 하나다."
     - "AI·크롤러·feedback-api는 expose만 해 호스트 밖으로 열리지 않고, 비밀값은 모듈별 .env와 읽기 전용 볼륨으로만 들어간다."
     - "Spring Boot·FastAPI 여러 개를 띄워야 해서 프론트 중심 호스팅(Vercel)보다, EC2에서 이미 해 본 Docker 방식을 그대로 옮기는 편이 맞았다."
-  tradeoff: "모든 서비스가 1 OCPU·4GB 서버 하나를 나눠 써 한 서비스의 부하나 서버 장애가 전부에 번진다. 프로젝트 저장소의 Compose와 서버 Compose가 따로 있어 둘이 어긋날 수 있다. calainder-server는 8888을 모든 인터페이스에 열어 두었고, 지금은 OCI·iptables 규칙이 외부 접근을 막고 있다."
+  tradeoff: "모든 서비스가 1 OCPU·6GB 서버 하나를 나눠 써 한 서비스의 부하나 서버 장애가 전부에 번진다. 프로젝트 저장소의 Compose와 서버 Compose가 따로 있어 둘이 어긋날 수 있다. calainder-server는 8888을 모든 인터페이스에 열어 두었고, 지금은 OCI·iptables 규칙이 외부 접근을 막고 있다."
 ---
 
 > Calainder는 처음에 AWS EC2 한 대에 Docker Compose로 올렸고, 이후 OCI 서버 한 대로 옮기면서 Teammate와 두 서비스가 함께 쓰는 feedback-api까지 같은 서버에 올렸습니다. 프로젝트 저장소의 Dockerfile·docker-compose는 팀원이 작성했고, 서버 구성(최상위 Compose, `.env`, Nginx, HTTPS, OCI 네트워크, 도메인)은 AI(Codex)의 안내를 받아 직접 했습니다. 이 글은 그때 고른 구조와 이유입니다.
@@ -29,7 +29,7 @@ decision:
 | Teammate | `teammate-web`(Spring Boot) · `teammate-ai-grading`(FastAPI) |
 | feedback-api | 두 서비스가 함께 쓰는 FastAPI, Firestore 저장 |
 
-- **비용.** 무료 범위 안에서 운영한다. OCI의 Always Free 대상인 `VM.Standard.A1.Flex`(ARM)를 골랐고, 4 OCPU·24GB로 늘리려던 요청은 춘천 리전 용량 부족(`Out of host capacity`)으로 계속 실패해 1 OCPU·4GB로 운영했다.
+- **비용.** 무료 범위 안에서 운영한다. OCI의 Always Free 대상인 `VM.Standard.A1.Flex`(ARM)를 골랐고, 4 OCPU·24GB로 늘리려던 요청은 춘천 리전 용량 부족(`Out of host capacity`)으로 계속 실패해 1 OCPU·6GB로 운영했다.
 - **서버는 한 대, 도메인은 둘.** `calainder.kr`, Teammate 도메인.
 - **비밀값이 많다.** Google OAuth 클라이언트, AES 키, OpenAI 키, Firebase 서비스 계정 파일.
 - **프로젝트마다 이미 Compose가 있다.** 각 저장소에는 그 프로젝트만 띄우는 `docker-compose.yml`이 있다.
@@ -159,7 +159,7 @@ EC2 때는 인스턴스를 껐다 켜자 공인 IP가 바뀌어 `calainder.kr`�
 
 ## 감수한 것과 다음
 
-- **한 서버에 모두.** 1 OCPU·4GB를 여섯 컨테이너가 나눠 씁니다. 메모리 사용량은 재 보지 않았습니다. Playwright 크롤링이나 AI 요청이 몰리면 다른 서비스도 느려질 수 있고, 서버가 멈추면 모두 멈춥니다.
+- **한 서버에 모두.** 1 OCPU·6GB를 여섯 컨테이너가 나눠 씁니다. 메모리 사용량은 재 보지 않았습니다. Playwright 크롤링이나 AI 요청이 몰리면 다른 서비스도 느려질 수 있고, 서버가 멈추면 모두 멈춥니다.
 - **두 벌의 Compose.** 저장소 Compose(로컬·단독 실행용)와 서버 최상위 Compose가 따로라, 한쪽만 고치면 어긋납니다. 서버 Compose를 별도 저장소로 관리하는 것이 다음 과제입니다.
 - **돌아보면: 웹 서버 포트 바인딩.** `"8888:8888"`은 호스트의 모든 인터페이스에 열립니다. 지금은 OCI Security List와 iptables가 8888을 막고 있지만, `"127.0.0.1:8888:8888"`로 묶으면 Nginx만 닿게 할 수 있습니다.
 - **무료 도메인 인증서.** `o-r.kr`도 다른 사용자와 발급 한도를 나눠 쓰므로, 갱신이 막히면 `teammate.calainder.kr` 같은 하위 도메인으로 옮깁니다.

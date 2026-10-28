@@ -197,7 +197,7 @@ Docker 파일(Dockerfile, docker-compose, requirements)은 다른 팀원이 담�
 | feedback-api | Calainder·Teammate가 함께 쓰는 FastAPI 모듈, Firestore 저장([#7](https://github.com/gasic37200/Calainder/issues/7)) |
 | Nginx | 도메인별 리버스 프록시, HTTPS |
 
-- **서버** — OCI 춘천 리전 A1 Flex(Ubuntu 24.04 ARM), 1 OCPU·4GB로 운영했습니다.
+- **서버** — OCI 춘천 리전 A1 Flex(Ubuntu 24.04 ARM), 1 OCPU·6GB로 운영했습니다.
 - **설정 분리** — 모듈마다 자기 `.env`를 읽게 하고([#7](https://github.com/gasic37200/Calainder/issues/7)), 모듈별 `.dockerignore`로 `.env`·가상환경·캐시·빌드 결과·크롤러 로그인 상태 파일을 이미지에서 뺐습니다([#8](https://github.com/gasic37200/Calainder/issues/8)).
 - **재시작** — 컨테이너에 `restart: unless-stopped`를 걸었습니다([#7](https://github.com/gasic37200/Calainder/issues/7)).
 - **배포 반영** — 서버에서 `main`을 받아 바뀐 서비스 이미지만 다시 빌드합니다([#11](https://github.com/gasic37200/Calainder/issues/11)). 선택 의존성을 바꾼 v1.5.1은 캐시 없이 다시 빌드해야 반영됩니다([#10](https://github.com/gasic37200/Calainder/issues/10)).
@@ -209,7 +209,7 @@ Docker 파일(Dockerfile, docker-compose, requirements)은 다른 팀원이 담�
 | --- | --- | --- |
 | EC2를 다시 켠 뒤 `calainder.kr`이 `ERR_CONNECTION_TIMED_OUT` | 서버 안(localhost·Docker·Nginx)은 정상이라 바깥 경로를 보니, 인스턴스를 중지했다 켜면서 공인 IP가 바뀌었는데 A 레코드는 예전 IP를 가리킴 | A 레코드를 새 IP로 바꾸고 DNS 반영을 기다림. 고정하려면 Elastic IP가 필요 |
 | 서버·컨테이너 시간이 UTC | 프롬프트의 현재 시각이 9시간 어긋나 상대시간 일정이 틀림 | 코드에서 `Asia/Seoul`을 명시([#5](https://github.com/gasic37200/Calainder/issues/5), 트러블슈팅 2) |
-| OCI 4 OCPU·24GB 증설 요청이 `Out of host capacity`로 계속 실패 | 춘천 리전 A1 물리 용량 부족 | 1 OCPU·4GB로 먼저 운영 |
+| OCI 4 OCPU·24GB 증설 요청이 `Out of host capacity`로 계속 실패 | 춘천 리전 A1 물리 용량 부족 | 1 OCPU·6GB로 먼저 운영 |
 
 </details>
 
