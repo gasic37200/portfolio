@@ -43,6 +43,7 @@ troubleshooting:
   cause: "SSE 응답은 서블릿 비동기 디스패치로 나가는데, JWT 필터(OncePerRequestFilter)는 비동기 디스패치에서 다시 돌지 않아 인증 정보가 비어 있고, anyRequest().authenticated()에 막혔다."
   solution: "비동기 디스패치는 처음 요청이 인증을 통과한 뒤에만 생기므로 DispatcherType.ASYNC만 허용했다. 서버는 안 읽은 알림 수만 보내고, X-Accel-Buffering: no와 30초 ping으로 프록시가 응답을 모아 두거나 조용한 연결을 끊지 않게 했다(#177). 운영 Nginx에는 SSE 경로에만 HTTP/1.1·버퍼링 끔·1시간 타임아웃을 줬다(#209)."
   result: "테스트 9개로 '연결 즉시 현재 수 전송', '탭 두 개 모두 수신·다른 회원 미수신', '끊긴 연결 제거', '알림 저장·읽음이 커밋된 뒤에만 전송'을 고정했다(전체 521개 통과). 운영 반영 전 nginx -t로 설정을 검사했다. 남은 한계: 연결 목록을 메모리에 두는 구조라 서버가 여러 대가 되면 Redis Pub/Sub이 필요하다."
+  post: "sse-jwt-async-dispatch"
 - title: "첫 운영 배포에서 앱이 뜨지 않는 문제 (Kafka 헬스 체크)"
   problem: "첫 배포에서 Kafka가 unhealthy로 표시돼 Spring 앱이 기동되지 않았다. Kafka 자체는 정상이었다(OOM 없음, 재시작 0회)."
   cause: "헬스 체크가 10초마다 kafka-topics.sh로 JVM을 새로 띄웠는데, 서버에서 이미지를 빌드하느라 CPU 크레딧이 바닥나 10초를 넘겼다. depends_on: service_healthy 때문에 앱은 계속 기다렸다."
