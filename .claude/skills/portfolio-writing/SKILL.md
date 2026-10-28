@@ -60,11 +60,11 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 ## 기술 기록 글
 
-트러블슈팅 박스가 "무슨 일이 있었고 어떻게 고쳤나"라면, 기술 기록은 **"여러 방법 중 왜 이 방법을 골랐나"**를 쓰는 결정 기록이다(2026-10-27 멘토 피드백). 양식은 [project-template.md](project-template.md) "3. 기술 기록 양식"을 따른다. 기준 글은 `payment-commit-then-courier`.
+트러블슈팅 박스가 "무슨 일이 있었고 어떻게 고쳤나"라면, 기술 기록은 **"여러 방법 중 왜 이 방법을 골랐나"**를 쓰는 결정 기록이다(2026-10-27 멘토 피드백). 트러블슈팅 박스는 STAR(현상 → 원인 분석 및 근거 → 해결 방안 → 결과 및 검증, 2026-10-28)로 쓴다. 양식은 [project-template.md](project-template.md) "3. 기술 기록 양식"을 따른다. 기준 글은 `sse-jwt-async-dispatch`(제목은 해 본 기술을 `~하기`로, 원리 절 포함, `troubleshooting` frontmatter 없이 `decision`만).
 
 - frontmatter: `title`(결정의 질문을 드러내는 제목), `summary`, `date`, `tags`, `projects: ["slug", …]`, `decision:`(question·choice·reasons·tradeoff, 글 상단 요약 상자). 예전 글의 `troubleshooting:` 상자는 `decision`이 없을 때만 그려진다.
 - 선택지는 실제로 검토한 것만. 작업 세션(`SendMessage`)·PR 코멘트에서 확인하고, 없으면 사용자에게 묻는다.
-- 아직 결정 기록으로 바꾸지 않은 글: `crawler-duplicate-fixed-event-id`, `llm-relative-time`, `oci-docker-compose-deploy`, `participation-scope-by-match`, `phone-number-privacy`, `uvicorn-422-empty-body`, `grill-me-planning`. 바꿀 때 같은 양식으로.
+- 2026-10-28 기준 기술 기록 9개 모두 결정 기록으로 바꿨다. 새 글도 같은 양식으로.
 
 ## 블로그 (임시 글)
 

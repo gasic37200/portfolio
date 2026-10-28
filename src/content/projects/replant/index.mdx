@@ -18,45 +18,45 @@ demoUrl: https://replant.kro.kr
 repoUrl: https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE
 troubleshooting:
 - title: "결제가 롤백돼도 택배 예약만 남는 문제"
-  problem: "처음 구현(#103)은 결제 트랜잭션 안에서 택배사 예약 API를 호출했다. 결제가 뒤 단계에서 롤백되면 택배사에는 예약만 남고, 택배사 응답(최대 5초)을 기다리는 동안 결제 트랜잭션도 열려 있었다."
-  cause: "외부 API 호출은 DB 트랜잭션의 롤백 대상이 아닌데, 호출이 트랜잭션 경계 안에 있었다."
-  solution: "배송 생성을 두 단계로 나눴다. 결제 트랜잭션에서는 배송 행(READY + 멱등키)만 저장하고, 택배사 예약은 커밋 후 콜백에서 호출한다(#129). 첫 시도에서는 콜백 안의 저장이 커밋되지 않았는데, Testcontainers PostgreSQL 통합 테스트로 이를 발견하고 PROPAGATION_NOT_SUPPORTED로 트랜잭션을 떼어 save()마다 커밋되게 했다. 예약에 실패한 건은 5분마다 1분 넘은 READY 배송을 같은 멱등키로 재예약한다(#149)."
-  result: "통합 테스트로 '커밋 전에는 택배사를 부르지 않고 커밋 후 BOOKED·송장 저장', '롤백되면 배송 행도 택배사 호출도 없음', '판매자 주소 조회가 실패해도 READY로 남음'을 고정했고, 기존 실제 결제 흐름 테스트는 코드 변경 없이 통과했다(전체 392개). 남은 한계: 커밋 후 호출이 같은 요청 스레드에서 동기로 돌아, 택배사가 느리면 결제 응답이 배송 1건당 최대 8초(연결 타임아웃 3초 + 응답 타임아웃 5초) 늦어질 수 있다. 실제 지연을 재는 카오스 테스트와 비동기 전환·서킷 브레이커를 다음 과제로 정했다. 배운 점: 외부 호출은 DB 롤백으로 되돌릴 수 없어, 호출 시점을 커밋 뒤로 옮기고 다시 시도할 수 있는 상태를 먼저 커밋해 둔다."
+  problem: "처음 구현(#103)과 결제 연결(#85)에서 OrderService.orderPayment()가 결제 트랜잭션 안에서 shipmentService.createShipments()를 호출했다. 이 구조에서는 택배 예약 뒤 결제가 롤백되면 주문·배송 행은 사라지고 택배사에는 예약만 남으며, 택배사 응답(응답 타임아웃 5초 × 판매자 수)을 기다리는 동안 결제 트랜잭션과 DB 연결도 잡혀 있었다. 판매자 기본 주소가 없는 것 같은 배송 쪽 오류가 결제까지 실패시킬 수도 있었다."
+  cause: "#85 코드를 읽고 #123 코멘트에 정리했다. 외부 API 호출은 DB 롤백 대상이 아닌데, 호출이 결제 트랜잭션 경계 안에 있었다. 커밋 후로 옮길 방법을 정하려고 Testcontainers PostgreSQL로 afterCommit() 안의 저장을 확인해 보니, 그냥 save()는 예외 없이 저장되지 않았고(끝난 트랜잭션에 합류), REQUIRES_NEW는 저장되지만 택배사 응답까지 새 트랜잭션을 잡았으며, NOT_SUPPORTED는 save()마다 자기 트랜잭션으로 커밋됐다."
+  solution: "주문 담당 팀원과 #123 코멘트에서 세 방법(주문 쪽 커밋 후 콜백, 메서드 바깥 호출, 배송 쪽 커밋 후 실행)을 비교했고, 내가 제안한 두 단계 방식으로 정했다. 1단계는 결제 트랜잭션 안에서 배송 행(READY + 멱등키 courierOrderNo)만 저장하고, 2단계는 ShipmentService.runAfterCommit()이 커밋 후 TransactionTemplate을 PROPAGATION_NOT_SUPPORTED로 열어 택배사 예약과 송장 저장을 한다(#129). 예약에 실패한 READY 배송은 ShipmentScheduler가 5분마다(fixedDelay = 300_000) 생성 1분이 지난 것을 최대 100건씩 같은 멱등키로 재예약한다(#149)."
+  result: "ShipmentAfterCommitIntegrationTest(Testcontainers) 3개로 '커밋되면 그 뒤에 택배사에 예약하고 송장번호를 저장한다', '롤백되면 배송 행도 남지 않고 택배사도 부르지 않는다', '커밋 후 판매자 주소 조회가 실패해도 배송은 READY로 남는다'를 고정했고, 기존 OrderPaymentIntegrationTest는 코드 변경 없이 통과했다(전체 392개). 재예약 테스트 2개를 더해 전체 437개가 통과했다(#149). 남은 한계: 2단계가 같은 요청 스레드에서 동기로 돌아, 타임아웃 합계로 계산하면 결제 응답이 배송 1건당 최대 8초(연결 3초 + 응답 5초) 늦어질 수 있다. 실제 지연을 재는 카오스 테스트는 아직 하지 않았고, 비동기 전환·서킷 브레이커와 함께 다음 과제로 남겼다."
   post: "payment-commit-then-courier"
 - title: "재예약 스케줄러가 주문 취소를 덮어쓰는 문제 (Lost Update)"
-  problem: "재예약 스케줄러가 택배사 응답을 기다리는 사이 주문 취소가 먼저 저장되면, 재예약이 BOOKED로 덮어써 취소가 사라지고 택배가 그대로 수거될 수 있었다."
-  cause: "두 작업이 같은 배송 행을 각자 읽고, 판단하고, 저장했다."
-  solution: "배송에 @Version 낙관적 락을 걸어 늦게 저장하는 쪽을 실패시켰다. 외부 API를 기다리는 동안 DB 락을 잡지 않으려고 비관적 락 대신 골랐다. 택배사에 남은 예약은 취소 쪽이 같은 멱등키로 다시 불러 송장을 받은 뒤 취소하고, 택배사 취소 응답은 200 취소·404 없음·409 이미 수거(재시도 안 함)·5xx 재시도로 나눠 실패한 취소를 5분마다 다시 보낸다(#168)."
-  result: "Testcontainers 통합 테스트 9개로 '커밋 후에만 택배사 취소 호출', '주문 롤백 시 미호출', '중복 취소에도 한 번만 호출', '수거 이후 취소 거부', '실패 후 스케줄러 재시도', '409는 재시도 안 함'을 고정했다. 경합 테스트는 @Version을 빼면 실패하는 것까지 확인해 락이 실제로 경합을 막는다는 것을 보였다(전체 466개 통과). 남은 한계: 드물게 재예약과 동시에 저장되면 취소가 낙관적 락 예외로 실패할 수 있고, 다시 요청하면 처리된다. 배운 점: 외부 API를 기다리는 구간에서는 락을 잡지 않고, 늦게 저장하는 쪽을 실패시킨다."
-- title: "웹훅 중복·순서 뒤바뀜과 잘못된 응답 코드"
+  problem: "배송 취소(#168)를 붙이면서, 재예약 스케줄러가 택배사 응답을 기다리는 사이 주문 취소가 먼저 CANCELLED를 저장하면 재예약이 BOOKED로 덮어쓸 수 있다는 것을 확인했다. 그러면 취소가 사라지고, 택배사에 남은 예약은 그대로 수거된다(404-express는 예약 3분 뒤 자동 수거)."
+  cause: "재예약과 취소가 같은 배송 행을 각자 읽고, 판단하고, 저장했다. ShipmentCancelIntegrationTest에 '예약하는 사이 주문 취소가 먼저 저장되는' 순서를 만든 테스트(cancelWinsOverConcurrentBooking)를 두고 Shipment의 @Version을 빼 보니 테스트가 실패해, 이 순서에서 취소가 덮어써진다는 것을 재현했다."
+  solution: "Shipment에 @Version 낙관적 락을 걸어 늦게 저장하는 쪽(재예약)이 ObjectOptimisticLockingFailureException으로 실패하게 했다. 택배사를 기다리는 동안 DB 락을 잡지 않으려고 비관적 락 대신 골랐다. 택배사에 남은 예약은 취소 쪽이 같은 멱등키로 예약을 다시 불러 송장을 받은 뒤 취소하고, 택배사 취소 응답은 200 취소·404 없음·409 이미 수거(재시도 안 함)·타임아웃과 5xx(CourierCancelException, 재시도)로 나눠 실패한 취소를 5분마다 다시 보낸다(#168)."
+  result: "ShipmentCancelIntegrationTest(Testcontainers) 9개로 '커밋 뒤에만 택배사 취소 호출', '주문 롤백 시 미호출', '이미 취소된 배송은 택배사를 다시 부르지 않음', '수거된 배송은 취소 거부', '실패 후 대사 작업이 다시 취소', '409는 재시도 안 함', '예약 중 취소가 먼저 저장돼도 덮어쓰지 않음'을 고정했고, 마지막 테스트는 @Version을 빼면 실패한다. ShipmentTest 5개, CourierClientTest(WireMock) 2개를 더해 전체 466개가 통과했다. 남은 한계: 드물게 재예약과 동시에 저장되면 취소가 ObjectOptimisticLockingFailureException으로 실패할 수 있고, 다시 요청하면 처리된다."
+- title: "택배사 웹훅이 중복·역순으로 오고 응답 코드가 재전송을 부르는 문제"
   problem: "택배사 웹훅은 중복되거나 순서가 바뀌거나 중간 단계가 빠질 수 있었다. 처음에는 모르는 주문번호에 500을 돌려줘 택배사가 같은 이벤트를 계속 다시 보냈고, 키 검사에서 예외가 빠져 틀린 키도 통과했다."
-  cause: "택배사가 5xx면 재전송하고 4xx면 포기한다는 계약을 생각하지 않고, 예외로 흐름을 처리했다."
-  solution: "상태는 앞으로만 반영하는 도메인 규칙 하나로 중복과 역순을 걸렀다(eventId 테이블 없이). 다시 보내도 결과가 같은 경우는 로그 후 200, 키 오류는 401로 막고 서버 키가 비어 있어도 닫히게 했다(#123). 수거 웹훅이 빠져도 다음 단계가 처음 반영될 때 택배비 정산 이벤트를 한 번만 발행한다(#151). 상태가 되돌아오거나 단계별 이력이 필요해지면 상태별 시각 컬럼이나 이벤트 테이블로 확장한다."
-  result: "테스트로 '같은 상태 재수신·순서 뒤바뀜 무시', '키 맞음 200, 틀림·없음·서버 미설정 401, 401이면 서비스 미호출', '중복 웹훅에도 정산 이벤트 1번, 커밋 후에만 발행'을 고정했다. 404-express 컨테이너로 예약 후 웹훅 3건을 받아 READY → PICKED_UP → IN_TRANSIT → DELIVERED까지 DB에 반영되는 것을 수동 E2E로 확인했다(전체 370개 통과). 남은 한계: 웹훅과 예약 응답을 모두 놓쳤을 때 택배사 상태를 직접 조회해 맞추는 대사 작업은 없다."
-- title: "배송에 주문 정보를 복사했다가 순환 의존으로 되돌린 문제"
-  problem: "재예약·알림·정산 이벤트에 필요한 주문 정보(주문 id, 구매자, 판매자, 택배비, 받는 사람)를 배송 테이블에 복사해 저장했다. 컬럼을 추가하기 전에 만든 배송·알림은 값이 비어, 알림에서 주문 상세로 이동할 수 없었고 운영 보정 SQL이 따로 필요해졌다(#199). 같은 값을 주문과 배송 두 곳에서 관리하게 됐다."
-  cause: "처음 복사한 이유는 재예약 요청을 주문 조회 없이 배송에 저장된 값만으로 만들어, 첫 예약과 재예약이 같은 요청이 되게 하려는 것이었다(멱등키 재사용 시 내용 불일치 409 방지, #149). 하지만 주문을 조회하지 못한 진짜 이유는 조회 경로가 막혀 있어서였다. ShipmentService가 배송 로직과 배송 조회(ShipmentQuery 구현)를 함께 맡고 있었고, 주문 조회(OrderReadService)가 배송 조회를 쓰고 있어 배송 로직이 주문 조회를 쓰면 빈 순환 의존이 생겼다. 결제 후 바뀌지 않는 값인데도 순환을 피하려고 복사로 우회한 것이다."
-  solution: "배송 조회를 ShipmentQueryService로 분리해 의존을 한 방향으로 만들었다(주문 조회 → 배송 조회, 배송 로직 → 주문 조회). 주문 쪽 공개 조회에 OrderQuery.getShippingInfo(sellerOrderId)를 추가해 필요할 때 조회하고, 결제 시점에 고정해야 하는 상품 요약(item_summary)만 배송에 남겼다(#204, #206). 중간에 배송 저장소에서 주문 테이블을 JOIN하는 안도 구현했지만, 배송 모듈이 주문 테이블 구조를 알게 돼 책임에 맞지 않아 버렸다."
-  result: "배송 테이블의 복사 컬럼 7개를 제거했다. 운영 DB 컬럼은 ddl-auto: update가 지우지 않아 배포 후 보정 SQL로 정리한다. 전체 테스트 567개가 통과했고, 앱 전체를 띄우는 통합 테스트(@SpringBootTest)로 빈 순환이 없는 것을 확인했다. 배운 점: 저장할지 조회할지는 값이 바뀌는지로 정하고, 순환 의존은 데이터 복사가 아니라 역할 분리로 끊는다."
-- title: "SSE 알림을 보낼 때 인증된 연결도 401·403으로 막힐 수 있는 문제"
-  problem: "SSE 실시간 알림을 구현하면서, 로그인한 회원의 SSE 연결이 끝날 때(완료·타임아웃) 401·403으로 거부될 수 있다는 것을 미리 확인했다. 그대로 두면 실시간 알림이 전달되지 않는다."
-  cause: "SSE 연결이 끝날 때 서블릿 컨테이너가 같은 요청을 비동기(ASYNC) 디스패치로 다시 처리하는데, JWT 필터(OncePerRequestFilter)는 비동기 디스패치에서 다시 돌지 않아 인증 정보가 비어 있고, anyRequest().authenticated()에 막혔다."
-  solution: "비동기 디스패치는 처음 요청이 인증을 통과한 뒤에만 생기므로 DispatcherType.ASYNC만 허용했다. 서버는 안 읽은 알림 수만 보내고, X-Accel-Buffering: no와 30초 ping으로 프록시가 응답을 모아 두거나 조용한 연결을 끊지 않게 했다(#177). 운영 Nginx에는 SSE 경로에만 HTTP/1.1·버퍼링 끔·1시간 타임아웃을 줬다(#209)."
-  result: "테스트 9개로 '연결 즉시 현재 수 전송', '탭 두 개 모두 수신·다른 회원 미수신', '끊긴 연결 제거', '알림 저장·읽음이 커밋된 뒤에만 전송'을 고정했다(전체 521개 통과). 운영 반영 전 nginx -t로 설정을 검사했다. 남은 한계: 연결 목록을 메모리에 두는 구조라 서버가 여러 대가 되면 Redis Pub/Sub이 필요하다."
+  cause: "직접 만든 모의 택배사 404-express는 5xx면 같은 이벤트를 재전송하고 4xx면 포기한다. 이 계약을 생각하지 않고 예외로 흐름을 처리해, 다시 보내도 결과가 같은 요청에도 500이 나가 그 택배의 다음 이벤트까지 막혔다. 배송 상태는 READY·BOOKED → PICKED_UP → IN_TRANSIT → DELIVERED 한 방향으로만 가므로, 같은 상태나 이전 상태가 다시 오는 것은 모두 재전송이나 역순이라고 판단했다."
+  solution: "Shipment.applyCourierStatus가 상태를 앞으로만 반영하게 해 중복과 역순을 걸렀고, eventId 저장 테이블은 만들지 않았다(eventId는 로그 추적용). 모르는 주문번호·모르는 상태·중복·역순은 로그를 남기고 200, X-Api-Key는 WEBHOOK_API_KEY와 MessageDigest.isEqual로 비교해 틀리거나 없으면 401, 서버 키가 비어 있어도 401로 닫히게 했다(SecurityConfig에서는 POST /api/v1/webhooks/courier만 permitAll, #123). 수거 웹훅이 빠져도 수거 이후 상태가 처음 반영될 때 택배비 정산 이벤트를 한 번만 발행한다(#151)."
+  result: "ShipmentTest 4개(같은 상태 재수신·순서 뒤바뀜 무시 등)와 CourierWebhookControllerTest 4개('키가 틀리면 401을 돌려주고 서비스를 부르지 않는다', '서버에 키가 설정되지 않았으면 빈 키를 보내도 401' 등)를 추가해 전체 370개가 통과했고, 404-express 컨테이너로 예약 후 웹훅 3건을 받아 READY → PICKED_UP(송장 채움) → IN_TRANSIT → DELIVERED(완료 시각)까지 DB 반영을 수동 E2E로 확인했다. #151에서는 ShipmentWebhookServiceTest로 'PICKED_UP 없이 IN_TRANSIT이 와도 발행', '같은 웹훅이 다시 와도 한 번만 발행'을, ShipmentPickedUpEventPublisherTest로 커밋 후에만 발행을 고정했다(전체 445개). 남은 한계: 웹훅과 예약 응답을 모두 놓쳤을 때 택배사 상태를 직접 조회해 맞추는 대사 작업은 없다."
+- title: "배송에 복사한 주문 정보가 비어, 알림에서 주문 상세로 이동할 수 없는 문제"
+  problem: "재예약·알림·정산 이벤트에 필요한 주문 정보(order_id, buyer_id, seller_id, shipping_fee, receiver_name·phone·address)를 배송 테이블에 복사해 저장했다. 컬럼을 추가하기 전에 만든 행은 값이 비어, #199에 정리한 대로 shipment.order_id·notification.order_id가 비면 알림에서 주문 상세로 이동할 수 없었고, seller_id가 비면 READY 재예약이, shipping_fee가 비면 수거 시 정산 쪽 배송비 수납이 실패했다. 운영 1회 보정 SQL이 따로 필요해졌다."
+  cause: "처음 복사한 이유는 재예약 요청을 주문 조회 없이 배송에 저장된 값만으로 만들어, 멱등키를 다시 쓸 때 요청 내용이 달라지는 409를 피하려는 것이었다(#149). 하지만 주문을 조회하지 못한 진짜 이유는 의존 방향이었다. ShipmentService가 배송 로직과 배송 조회(ShipmentQuery 구현)를 함께 맡았고 주문 조회(OrderReadService)가 배송 조회를 쓰고 있어, 배송 로직이 주문 조회를 쓰면 빈 순환 의존이 생겼다. 값은 결제 후 바뀌지 않는데도 순환을 피하려고 복사로 우회한 것이다."
+  solution: "ShipmentQuery 구현을 새 ShipmentQueryService로 분리해 의존을 한 방향(OrderReadService → ShipmentQueryService, ShipmentService → OrderQuery)으로 만들었다. 주문 쪽 공개 조회에 OrderQuery.getShippingInfo(sellerOrderId)를 추가해 예약·알림·수거 이벤트 때 조회하고, 결제 시점 값으로 고정해야 하는 item_summary만 배송에 남겼다(#204, #206). 중간에 배송 저장소에서 주문 테이블을 JOIN하는 안도 구현했지만, 배송 모듈이 주문 테이블 구조를 알게 돼 버렸다."
+  result: "배송 엔티티에서 복사 컬럼 7개를 제거했고, 운영 DB 컬럼은 ddl-auto: update가 지우지 않아 docs/sql/2026-10-19_backfill_shipment_notification.sql에 삭제문을 넣어 배포 후 실행하게 했다. OrderReadServiceTest에 getShippingInfo 정상·판매자 주문 없음 테스트를 추가해 전체 567개가 통과했고, 앱 전체를 띄우는 @SpringBootTest(OrderPaymentIntegrationTest)가 통과해 빈 순환이 없는 것을 확인했다. 남은 한계: 운영 DB에 남은 컬럼 정리는 보정 SQL 실행에 달려 있다."
+- title: "SSE 연결이 끝날 때 인증된 연결도 401·403으로 막힐 수 있는 문제"
+  problem: "SSE 실시간 알림(#177)을 구현하면서, 로그인한 회원의 SSE 연결이 끝날 때(완료·타임아웃·에러) 요청이 401·403으로 거부될 수 있다는 것을 실제로 겪기 전에 확인했다. 연결은 30분(SSE_TIMEOUT_MS) 타임아웃마다 끝나므로, 그대로 두면 연결마다 이 거부가 생긴다."
+  cause: "SseEmitter를 반환하면 서블릿 비동기 처리가 시작되고, Spring 소스(ResponseBodyEmitter)를 보면 연결을 끝낼 때와 타임아웃·에러 때 같은 요청이 ASYNC 디스패치로 다시 처리된다. JWT 필터(OncePerRequestFilter)는 ASYNC 디스패치에서 다시 돌지 않아 인증 정보가 비어 있는데, 인가 규칙 anyRequest().authenticated()는 ASYNC 디스패치에도 적용된다. 처음에는 알림을 보낼 때마다 ASYNC 디스패치가 일어난다고 이해해 코드 주석에 '알림 전송 때 401·403'으로 적었고, 소스를 다시 보고 막히는 시점을 연결 종료로 바로잡았다."
+  solution: "ASYNC 디스패치는 처음 요청이 인증을 통과한 뒤에만 생기므로, SecurityConfig에 .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()만 추가하고 구독 경로는 그대로 인증을 요구했다. 서버는 안 읽은 알림 수만 보내고, 응답 헤더 X-Accel-Buffering: no와 30초 :ping으로 프록시가 응답을 모아 두거나 조용한 연결을 끊지 않게 했다(#177). 운영 Nginx에는 location = /api/v1/notifications/subscribe에만 proxy_http_version 1.1, proxy_buffering off, proxy_read_timeout 1h를 줬다(#209)."
+  result: "NotificationSseRegistryTest 5개('연결하자마자 지금 안 읽은 알림 수를 보낸다', '한 회원의 탭 두 개 모두에 보내고, 다른 회원에게는 보내지 않는다', '끊긴 연결은 보내다 실패하면 목록에서 뺀다' 등), NotificationServiceIntegrationTest 3개(커밋 후 전송, 모두 읽음 후 0, 미구독 회원 미전송), NotificationControllerTest 1개를 추가해 전체 521개가 통과했다. 운영 Nginx 설정은 nginx -t 통과 후 reload했다(#209). 남은 한계: 보안 필터 체인 전체를 거친 ASYNC 허용 효과는 자동 테스트로 확인하지 못했고(#177에 '로컬·배포 환경에서 확인 필요'로 남김), 연결 목록이 메모리에 있어 서버가 여러 대가 되면 Redis Pub/Sub이 필요하다."
   post: "sse-jwt-async-dispatch"
-- title: "첫 운영 배포에서 앱이 뜨지 않는 문제 (Kafka 헬스 체크)"
-  problem: "첫 배포에서 Kafka가 unhealthy로 표시돼 Spring 앱이 기동되지 않았다. Kafka 자체는 정상이었다(OOM 없음, 재시작 0회)."
-  cause: "헬스 체크가 10초마다 kafka-topics.sh로 JVM을 새로 띄웠는데, 서버에서 이미지를 빌드하느라 CPU 크레딧이 바닥나 10초를 넘겼다. depends_on: service_healthy 때문에 앱은 계속 기다렸다."
-  solution: "헬스 체크를 포트 확인(bash /dev/tcp)으로 바꿨다. 같은 배포에서 새 환경변수(PAYMENT_KEY_ENCRYPTION_KEY) 누락으로 기동이 실패한 것도 겪어, 배포 스크립트가 .env.example과 서버 .env를 비교해 빠진 변수가 있으면 멈추게 했다(#185)."
-  result: "헬스 체크가 약 0.3초로 줄었다(임시 Kafka 컨테이너에서 기동 전 실패, 기동 후 성공 확인). 누락 변수 검사는 키를 뺀 .env에서 검출되는 것을 확인했고, 머지 전 운영 서버의 health UP과 품종 217개 조회를 확인했다. 남은 한계: 서버에서 직접 이미지를 빌드해 첫 빌드가 10분 넘게 걸리고 CPU 크레딧을 소진한다. 이미지 레지스트리와 CD는 아직 없다."
+- title: "첫 운영 배포에서 앱이 기동되지 않는 문제 (Kafka 헬스 체크, 누락된 환경변수)"
+  problem: "첫 운영 배포에서 Kafka 컨테이너가 unhealthy로 표시돼, depends_on: service_healthy로 Kafka를 기다리는 Spring 앱이 기동되지 않았다. 같은 배포에서 #181(결제 키 암호화)로 생긴 PAYMENT_KEY_ENCRYPTION_KEY가 서버 .env에 없어 'Could not resolve placeholder'로 기동이 실패하기도 했다."
+  cause: "Kafka 컨테이너에 OOM이 없고 재시작이 0회라 Kafka 자체는 정상이라고 판단하고 헬스 체크를 봤다. 헬스 체크(kafka-topics.sh --list)는 실행될 때마다 JVM을 새로 띄웠는데, 서버에서 이미지를 빌드하느라 EC2 CPU 크레딧이 바닥난 상태라 10초를 넘겨 실패했다. 환경변수는 새 운영 필수 값이 .env.example에도 서버 .env에도 반영되지 않은 것이 원인이었다."
+  solution: "docker-compose.prod.yml의 Kafka 헬스 체크를 포트 확인(bash -c '</dev/tcp/localhost/9092', interval 10s, timeout 5s, retries 10, start_period 30s)으로 바꿔 JVM 기동을 없앴다. .env.example에 PAYMENT_KEY_ENCRYPTION_KEY를 추가하고, scripts/deploy.sh가 .env.example에 있는 변수가 서버 .env에 없거나 필수 값이 비어 있으면 배포를 멈추게 했다(#185)."
+  result: "임시 Kafka 컨테이너에서 새 헬스 체크가 기동 전 실패, 기동 후 성공하고 약 0.3초 걸리는 것을 확인했다. PAYMENT_KEY_ENCRYPTION_KEY를 뺀 .env에서 누락이 검출되고 전부 있으면 통과하는 것, docker compose -f docker-compose.prod.yml config와 bash -n scripts/deploy.sh 통과도 확인했다. 머지 전 운영 서버의 /actuator/health UP과 품종 217개 조회를 확인했고, 이 PR의 변경분은 다음 배포부터 적용된다. 남은 한계: 서버에서 직접 이미지를 빌드해 첫 빌드가 10분 넘게 걸리고 CPU 크레딧을 소진하며, 이미지 레지스트리와 CD는 아직 없다."
 ---
 
 > **식물 C2C 마켓** — 일단커밋(JustCommit), 프로그래머스 데브코스 6팀
 
 ## 한눈에 보기
 
-- **유형:** 팀 프로젝트 (세미 프로젝트)
-- **기간:** 2026.10.06 ~ 2026.10.22
+- **유형:** 팀 프로젝트 (처음 만든 서비스를 이어서 개발 중)
+- **기간:** 2026.10.06 ~ 2026.10.22 (처음 버전) · 이후 [추가한 기능과 개선한 점](#추가한-기능과-개선한-점)
 - **인원:** 5인
 - **역할:** **팀장**, 배송·알림 모듈, 모의 택배사 서버([404-express](/projects/404-express)), 팀 인프라(AWS, Docker, Nginx, CI)
 - **기여:** 팀 병합 PR 106개 중 19개
@@ -155,7 +155,7 @@ troubleshooting:
 | --- | --- |
 | 정산 수수료 5% | 판매액에만 적용, 배송비 제외, 원 단위 미만 버림 |
 | 72시간 자동 구매 확정 | 배송 완료 시각부터 72시간이 지나면 자동 확정 |
-| 배송비 3,000원 | 판매자 주문당 고정 (최종 프로젝트에서 거리 기반 계산 예정) |
+| 배송비 3,000원 | 판매자 주문당 고정 (거리 기반 계산은 [이어서 개발](#추가한-기능과-개선한-점) 예정) |
 | 결제 대기 10분 | 예치금이 부족할 때만 결제 대기 상태로 둠 |
 | 충전 10,000원 단위 | 충전은 취소할 수 없고, 예치금 범위 안에서 인출 |
 | 상품 사진 1~10장 | 최소 1장 필수, 첫 번째 사진이 대표 사진 |
@@ -266,7 +266,7 @@ troubleshooting:
 | 행위가 들어간 경로를 자원 중심으로 수정: `/notifications/{id}/read` → `PATCH /notifications/{id}`, `/notifications/read-all` → `PATCH /notifications` + `{isRead:true}`, `PATCH /shipment/{trackingNo}` → `POST /webhooks/courier` | 멘토링에서 "URL은 행위가 아닌 자원" 지적. 웹훅은 이벤트 전달이라 POST |
 | 택배 예약을 결제 커밋 뒤로 분리 ([#129](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/129)) | 결제가 롤백돼도 택배 예약이 남는 문제. 남은 한계는 응답 지연 |
 | 웹훅 중복은 eventId 테이블 대신 상태 순서로 거름 | 상태가 한 방향으로만 가서 같은 상태가 다시 오는 건 모두 재전송. eventId는 로그 추적용 |
-| 운영 DB는 Flyway 대신 `ddl-auto: update`, Flyway는 최종 프로젝트로 | 마이그레이션 파일이 없어 `validate`로는 빈 DB에서 기동 실패. 대가로 NOT NULL 컬럼 추가가 조용히 실패해 정산이 누락되는 일을 겪음 |
+| 운영 DB는 Flyway 대신 `ddl-auto: update`, Flyway는 다음 단계로 | 마이그레이션 파일이 없어 `validate`로는 빈 DB에서 기동 실패. 대가로 NOT NULL 컬럼 추가가 조용히 실패해 정산이 누락되는 일을 겪음 |
 | 배송비 0원 방어 코드를 넣지 않음 | 무료배송 정책이 없어 배송비는 항상 0보다 큼 |
 | 수거 시점에 배송비 정산 이벤트 발행 ([#151](https://github.com/prgrms-be-adv-devcourse/beadv8_8_JustCommit_BE/issues/151)) | 수거 전까지만 취소할 수 있으므로 수거가 배송비 확정 시점 |
 | 알림은 Spring 이벤트 대신 Kafka로 받고 SSE로는 신호만 | 팀이 모듈 간 통신을 Kafka로 통일했고, 원본을 DB에 두면 SSE가 끊겨도 다시 맞출 수 있음 |
@@ -354,7 +354,7 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 
 **인프라**
 
-공통 배경은 교육 과정 AWS 계정 규칙입니다. 세미 프로젝트는 EC2 1대만 쓸 수 있고, RDS·ElastiCache·ACM 같은 관리형 서비스는 따로 문의해야 하며, 운영진 방침도 "관리형 대신 직접 구성"이었습니다.
+공통 배경은 교육 과정 AWS 계정 규칙입니다. 처음 버전 개발 기간에는 EC2 1대만 쓸 수 있고, RDS·ElastiCache·ACM 같은 관리형 서비스는 따로 문의해야 하며, 운영진 방침도 "관리형 대신 직접 구성"이었습니다.
 
 | 고른 것 | 다른 선택지 | 이유 |
 | --- | --- | --- |
@@ -388,18 +388,22 @@ EC2 한 대(t3.medium)에 백엔드·DB·Redis·Kafka와 모의 택배사를 Doc
 
 <Troubleshooting items={frontmatter.troubleshooting} repo={frontmatter.repoUrl} />
 
+## 추가한 기능과 개선한 점
+
+위 내용은 처음 버전(2026.10.06 ~ 10.22) 기준입니다. 이어서 개발하며 추가하거나 고친 것을 여기에 모읍니다. 처음 버전에서 남긴 과제부터 정리했습니다.
+
+| 항목 | 처음 버전 | 바꿀 방향 | 상태 |
+| --- | --- | --- | --- |
+| 배송비 | 판매자 주문당 3,000원 고정 | 거리 기반 계산 | 예정 |
+| 스키마 관리 | 운영은 `ddl-auto: update`, 테스트는 `create-drop` | Flyway 마이그레이션과 운영 `validate`로 테스트·운영 스키마 일치 | 예정 |
+| 택배사 지연 대응 | 결제 응답이 배송 1건당 최대 8초(타임아웃 합계) 늦어질 수 있음, 측정 안 함 | 카오스 테스트로 실제 지연 측정 후 예약 비동기화·서킷 브레이커 | 예정 |
+| 웹훅 유실 | 웹훅이 오지 않으면 상태가 멈춤 | 택배사 상태를 직접 조회해 맞추는 대사 | 예정 |
+| 이벤트 유실 | Kafka 전송 실패 시 보완 장치 없음 | Spring Modulith 이벤트 발행 기록과 `@Externalized` | 예정 |
+
 ## 회고
 
 외부 시스템과 연동하는 기능은 정상 흐름보다 **실패했을 때 누가 다시 보낼지**를 먼저 설계해야 한다는 것을 체감했습니다. 멱등키, 재시도, 단방향 상태 전이, 낙관적 락으로 대부분을 막았지만, 택배사 응답 대기와 상태 대사(직접 조회해 맞추기)는 남은 과제입니다. 또 모의 택배사를 직접 만들면서 외부 연동 계약(응답 코드, 재시도 규칙)을 호출하는 쪽과 받는 쪽 양쪽에서 이해할 수 있었습니다.
 
-운영에서는 #176 이후 추가한 알림 종류 7개(#188에서 4개, #193에서 3개)가 저장되지 않는 일도 겪었습니다. Hibernate가 `@Enumerated(STRING)` 컬럼에 허용 값을 체크 제약으로 만드는데, 테스트는 `ddl-auto: create-drop`이라 매번 최신 값으로 만들고 운영은 `update`라 기존 제약을 고치지 않았습니다. CI가 운영과 다른 스키마를 검사하고 있었던 것이고, 운영 DB에서 제약을 직접 지워 해결했습니다. 세미 프로젝트에서 Flyway를 끈 결정의 대가였습니다.
+운영에서는 #176 이후 추가한 알림 종류 7개(#188에서 4개, #193에서 3개)가 저장되지 않는 일도 겪었습니다. Hibernate가 `@Enumerated(STRING)` 컬럼에 허용 값을 체크 제약으로 만드는데, 테스트는 `ddl-auto: create-drop`이라 매번 최신 값으로 만들고 운영은 `update`라 기존 제약을 고치지 않았습니다. CI가 운영과 다른 스키마를 검사하고 있었던 것이고, 운영 DB에서 제약을 직접 지워 해결했습니다. 처음 버전에서 Flyway를 끈 결정의 대가였습니다.
 
-팀장으로서 협업 규칙, CI, 문서를 정형화해 협업 기반을 만드는 건 처음이라 미숙했지만, 큰 도움이 된 경험이었습니다. 자체 평가는 8/10입니다.
-
-**다음 개선 방향**
-
-- 택배사 지연 카오스 테스트로 결제 응답 지연을 실제로 측정
-- 택배 예약을 비동기로 바꾸고 서킷 브레이커로 택배사 장애를 격리
-- 택배사 상태를 직접 조회하는 대사로 웹훅 유실 보완
-- Spring Modulith 이벤트 발행 기록과 `@Externalized`로 Kafka 전송 유실 방지
-- Flyway 마이그레이션과 운영 validate로 스키마 변경을 코드로 관리 (테스트·운영 스키마 일치)
+팀장으로서 협업 규칙, CI, 문서를 정형화해 협업 기반을 만드는 건 처음이라 미숙했지만, 큰 도움이 된 경험이었습니다. 자체 평가는 8/10입니다. 남은 과제는 [추가한 기능과 개선한 점](#추가한-기능과-개선한-점)에 모아 두었습니다.

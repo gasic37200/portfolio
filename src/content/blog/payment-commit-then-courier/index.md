@@ -1,5 +1,5 @@
 ---
-title: "결제가 끝난 주문의 택배 예약, 언제 어떻게 부를까"
+title: "결제 커밋 뒤에 택배사 예약 호출하기"
 summary: "결제 트랜잭션 안에서 부르던 택배사 예약을 '배송 행 저장'과 '예약 호출' 두 단계로 나눈 결정 기록입니다. 검토한 선택지, 이 방법을 고른 이유, 감수한 응답 지연을 정리했습니다."
 date: "2026-10-15"
 tags:
@@ -35,6 +35,44 @@ decision:
 2. **트랜잭션 점유** — 택배사를 기다리는 동안 DB 트랜잭션을 잡지 않는다.
 3. **복구** — 예약이 실패하거나 서버가 재시작돼도 다시 보낼 수 있어야 한다.
 4. **변경 범위** — 다른 팀원의 결제·주문 코드는 가능한 한 건드리지 않는다.
+
+## 먼저 알아야 할 원리
+
+### 외부 API 호출은 DB 롤백으로 되돌릴 수 없다
+
+`@Transactional`이 되돌리는 것은 DB 연결 위에서 한 작업뿐입니다. 트랜잭션 안에서 택배사에 HTTP 요청을 보냈다면, 그 요청은 이미 택배사에 도착해 처리됐고 우리 DB가 롤백해도 택배사 쪽 예약은 그대로입니다. 반대로 택배사 응답을 기다리는 동안에는 트랜잭션과 DB 커넥션이 계속 열려 있습니다. 그래서 외부 호출은 "트랜잭션이 확정된 뒤"로 옮기는 것이 기본 방향이 됩니다.
+
+### `TransactionSynchronization.afterCommit()`은 커밋 직후에 불린다
+
+Spring은 트랜잭션에 콜백을 등록하는 `TransactionSynchronizationManager.registerSynchronization(...)`을 제공합니다. 등록한 `TransactionSynchronization`의 `afterCommit()`은 이름 그대로 **커밋이 성공한 뒤에만** 불리고, 롤백되면 불리지 않습니다. `AbstractPlatformTransactionManager`의 커밋 처리 순서를 보면 다음과 같습니다([소스](https://github.com/spring-projects/spring-framework/blob/main/spring-tx/src/main/java/org/springframework/transaction/support/AbstractPlatformTransactionManager.java)).
+
+```text
+processCommit()
+  ├ doCommit()                      ← 실제 DB 커밋
+  ├ triggerAfterCommit()            ← afterCommit() 콜백
+  ├ triggerAfterCompletion()        ← afterCompletion() 콜백
+  └ cleanupAfterCompletion()        ← 이제야 커넥션·EntityManager를 스레드에서 떼어 냄
+```
+
+`@TransactionalEventListener(phase = AFTER_COMMIT)`도 내부에서 같은 `registerSynchronization(...)`으로 콜백을 등록합니다([소스](https://github.com/spring-projects/spring-framework/blob/main/spring-tx/src/main/java/org/springframework/transaction/event/TransactionalApplicationListenerSynchronization.java)). 커밋 직후, 자원이 아직 묶여 있는 시점에 실행된다는 점은 같습니다.
+
+### 콜백 안의 `save()`가 커밋되지 않는 이유
+
+위 순서에서 `afterCommit()`이 불릴 때는 DB 커밋은 끝났지만 트랜잭션 자원(커넥션, EntityManager)은 아직 현재 스레드에 묶여 있습니다. `TransactionSynchronization.afterCommit()`의 Javadoc은 이 시점의 데이터 접근 코드가 여전히 원래 트랜잭션에 "참여"하며, 그 뒤에는 커밋이 더 이상 따라오지 않는다고 적고, 여기서 부르는 트랜잭션 작업에는 `PROPAGATION_REQUIRES_NEW`를 쓰라고 안내합니다([Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronization.html#afterCommit())).
+
+Spring Data JPA의 `save()`는 기본 전파 속성(`REQUIRED`)의 `@Transactional`이 걸려 있습니다([Spring Data JPA 문서](https://docs.spring.io/spring-data/jpa/reference/jpa/transactions.html)). `REQUIRED`는 "현재 트랜잭션이 있으면 참여"하므로, 콜백 안의 `save()`는 이미 커밋된 트랜잭션에 참여한 것으로 처리됩니다. 그리고 커밋은 그 트랜잭션을 새로 시작한 쪽(`isNewTransaction()`)에서만 일어나기 때문에, 참여한 `save()`는 끝나도 커밋을 하지 않습니다. 결과적으로 **예외 없이 저장만 사라집니다.**
+
+### 전파 속성으로 원래 트랜잭션을 떼어 낸다
+
+`Propagation` Javadoc의 정의는 다음과 같습니다([Javadoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Propagation.html)).
+
+| 전파 속성 | 정의 | 콜백 안에서 쓰면 |
+| --- | --- | --- |
+| `REQUIRED` (기본) | 현재 트랜잭션이 있으면 참여, 없으면 새로 만든다 | 끝난 트랜잭션에 참여해 커밋되지 않음 |
+| `REQUIRES_NEW` | 현재 트랜잭션을 보류하고 새 트랜잭션을 만든다 | 저장되지만, 감싼 범위 전체(택배사 응답 대기 포함)에서 새 트랜잭션을 잡음 |
+| `NOT_SUPPORTED` | 현재 트랜잭션을 보류하고 트랜잭션 없이 실행한다 | 감싼 범위에는 트랜잭션이 없고, 그 안의 `save()`가 `REQUIRED`로 자기 트랜잭션을 새로 만들어 바로 커밋 |
+
+`NOT_SUPPORTED`로 감싸면 원래 트랜잭션이 보류되므로 `save()`가 참여할 트랜잭션이 없고, `save()` 하나하나가 짧은 트랜잭션으로 커밋됩니다. 택배사를 기다리는 구간에는 트랜잭션이 없습니다. 이 차이를 Testcontainers PostgreSQL로 확인한 결과가 아래 "이 방법을 고른 이유"의 두 번째 표입니다.
 
 ## 결정해야 했던 것
 

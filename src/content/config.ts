@@ -1,6 +1,6 @@
 import { defineCollection, z } from "astro:content"
 
-// One troubleshooting case, rendered as a 문제 → 원인 → 해결 과정 → 결과 box
+// One troubleshooting case, rendered as a 현상 → 원인 분석 및 근거 → 해결 방안 → 결과 및 검증 box
 const troubleshooting = z.object({
   title: z.string(),
   problem: z.string(),

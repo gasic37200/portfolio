@@ -11,19 +11,21 @@ type Props = {
 
 const { title, problem, cause, solution, result, post, repo } = Astro.props
 
-// Split "#123" references into links to the repo's issue (GitHub redirects PR numbers to /pull/)
-function parts(text: string) {
-  if (!repo) return [{ text }]
-  return text.split(/(#\d+)/).filter(Boolean).map((piece) =>
-    /^#\d+$/.test(piece) ? { text: piece, href: `${repo}/issues/${piece.slice(1)}` } : { text: piece }
-  )
+// Split `code` spans into inline code and "#123" references into links to the repo's issue
+// (GitHub redirects PR numbers to /pull/)
+function parts(text: string): { text: string; href?: string; code?: boolean }[] {
+  return text.split(/(`[^`]+`|#\d+)/).filter(Boolean).map((piece) => {
+    if (/^`[^`]+`$/.test(piece)) return { text: piece.slice(1, -1), code: true }
+    if (repo && /^#\d+$/.test(piece)) return { text: piece, href: `${repo}/issues/${piece.slice(1)}` }
+    return { text: piece }
+  })
 }
 
 const steps = [
-  { label: "문제", text: problem, dot: "bg-rose-500", tone: "text-rose-600 dark:text-rose-400" },
-  { label: "원인", text: cause, dot: "bg-amber-500", tone: "text-amber-600 dark:text-amber-400" },
-  { label: "해결 과정", text: solution, dot: "bg-sky-500", tone: "text-sky-600 dark:text-sky-400" },
-  { label: "결과", text: result, dot: "bg-emerald-500", tone: "text-emerald-600 dark:text-emerald-400" },
+  { label: "현상", text: problem, dot: "bg-rose-500", tone: "text-rose-600 dark:text-rose-400" },
+  { label: "원인 분석 및 근거", text: cause, dot: "bg-amber-500", tone: "text-amber-600 dark:text-amber-400" },
+  { label: "해결 방안", text: solution, dot: "bg-sky-500", tone: "text-sky-600 dark:text-sky-400" },
+  { label: "결과 및 검증", text: result, dot: "bg-emerald-500", tone: "text-emerald-600 dark:text-emerald-400" },
 ]
 ---
 
@@ -51,7 +53,9 @@ const steps = [
           <p class="mt-0.5 text-sm leading-relaxed text-black/80 dark:text-white/80">
             {parts(step.text).map((part) => part.href
               ? <a href={part.href} target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-black hover:dark:text-white">{part.text}</a>
-              : part.text)}
+              : part.code
+                ? <code class="rounded px-1 py-0.5 text-[0.85em] bg-black/[0.06] dark:bg-white/10">{part.text}</code>
+                : part.text)}
           </p>
         </div>
       </li>
