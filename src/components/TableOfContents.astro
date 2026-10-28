@@ -48,7 +48,18 @@ const items = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3)
         const links = document.querySelectorAll("[data-toc-link]")
         if (!links.length) return
         const targets = [...links].map((a) => document.getElementById(a.dataset.tocLink)).filter(Boolean)
-        const setActive = (id) => links.forEach((a) => a.classList.toggle("toc-active", a.dataset.tocLink === id))
+        const nav = links[0].closest("nav")
+        let activeId = null
+        const setActive = (id) => {
+          if (id === activeId) return
+          activeId = id
+          links.forEach((a) => a.classList.toggle("toc-active", a.dataset.tocLink === id))
+          // Scroll only the TOC box (not the page) so the active item stays near its middle
+          const active = nav.querySelector(`[data-toc-link="${id}"]`)
+          if (!active || nav.scrollHeight <= nav.clientHeight) return
+          const offset = nav.scrollTop + active.getBoundingClientRect().top - nav.getBoundingClientRect().top - nav.clientHeight / 2 + active.offsetHeight / 2
+          nav.scrollTo({ top: Math.max(0, offset), behavior: "smooth" })
+        }
         const onScroll = () => {
           let current = targets[0]?.id
           for (const t of targets) if (t.getBoundingClientRect().top < 140) current = t.id
