@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="'Pretendard','Noto Sans KR',sans-serif">
+  <rect width="760" height="330" rx="14" fill="#ffffff"/>
+  <text x="32" y="40" font-size="18" font-weight="700" fill="#111">OCI 무료 서버를 잡아 지금까지 쓰기까지</text>
+  <line x1="60" y1="170" x2="720" y2="170" stroke="#cbd5e1" stroke-width="3"/>
+
+  <!-- 1 -->
+  <circle cx="90" cy="170" r="9" fill="#ef4444"/>
+  <text x="90" y="110" font-size="13" font-weight="700" fill="#111" text-anchor="middle">5/29 콘솔 생성</text>
+  <text x="90" y="128" font-size="12" fill="#b91c1c" text-anchor="middle">Out of capacity</text>
+  <text x="90" y="210" font-size="12" fill="#475569" text-anchor="middle">춘천 AD는 1개뿐</text>
+
+  <!-- 2 -->
+  <circle cx="240" cy="170" r="9" fill="#0ea5e9"/>
+  <text x="240" y="110" font-size="13" font-weight="700" fill="#111" text-anchor="middle">재시도 스크립트</text>
+  <text x="240" y="128" font-size="12" fill="#0369a1" text-anchor="middle">3분마다 launch</text>
+  <text x="240" y="210" font-size="12" fill="#475569" text-anchor="middle">Cloud Shell + OCI CLI</text>
+
+  <!-- 3 -->
+  <circle cx="390" cy="170" r="9" fill="#f59e0b"/>
+  <text x="390" y="110" font-size="13" font-weight="700" fill="#111" text-anchor="middle">5/30 새벽 확보</text>
+  <text x="390" y="128" font-size="12" fill="#b45309" text-anchor="middle">같은 이름 VM 2대</text>
+  <text x="390" y="210" font-size="12" fill="#475569" text-anchor="middle">1대 + 부트 볼륨 삭제</text>
+
+  <!-- 4 -->
+  <circle cx="540" cy="170" r="9" fill="#ef4444"/>
+  <text x="540" y="110" font-size="13" font-weight="700" fill="#111" text-anchor="middle">5/31 사양 올리기</text>
+  <text x="540" y="128" font-size="12" fill="#b91c1c" text-anchor="middle">Out of host capacity</text>
+  <text x="540" y="210" font-size="12" fill="#475569" text-anchor="middle">update도 3분마다 재시도</text>
+
+  <!-- 5 -->
+  <circle cx="690" cy="170" r="9" fill="#10b981"/>
+  <text x="690" y="110" font-size="13" font-weight="700" fill="#111" text-anchor="middle">6/1 ~ 지금</text>
+  <text x="690" y="128" font-size="12" fill="#047857" text-anchor="middle">서비스 3개 운영</text>
+  <text x="690" y="210" font-size="12" fill="#475569" text-anchor="middle">IGW·iptables·HTTPS</text>
+
+  <text x="32" y="292" font-size="12" fill="#64748b">재고(용량)는 콘솔에서 보이지 않는다. 그래서 "될 때까지 같은 요청을 다시 보내는" 스크립트가 필요했다.</text>
+</svg>
