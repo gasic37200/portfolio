@@ -197,7 +197,7 @@ Docker 파일(Dockerfile, docker-compose, requirements)은 다른 팀원이 담�
 | feedback-api | Calainder·Teammate가 함께 쓰는 FastAPI 모듈, Firestore 저장([#7](https://github.com/gasic37200/Calainder/issues/7)) |
 | Nginx | 도메인별 리버스 프록시, HTTPS |
 
-- **서버** — OCI 춘천 리전 A1 Flex(Ubuntu 24.04 ARM), 1 OCPU·6GB로 운영했습니다.
+- **서버** — OCI 춘천 리전 A1 Flex(Ubuntu 24.04 ARM), 1 OCPU·6GB로 운영합니다. 무료 한도(4 OCPU·24GB)의 나머지는 다른 서비스를 위해 나눠 두었습니다.
 - **설정 분리** — 모듈마다 자기 `.env`를 읽게 하고([#7](https://github.com/gasic37200/Calainder/issues/7)), 모듈별 `.dockerignore`로 `.env`·가상환경·캐시·빌드 결과·크롤러 로그인 상태 파일을 이미지에서 뺐습니다([#8](https://github.com/gasic37200/Calainder/issues/8)).
 - **재시작** — 컨테이너에 `restart: unless-stopped`를 걸었습니다([#7](https://github.com/gasic37200/Calainder/issues/7)).
 - **배포 반영** — 서버에서 `main`을 받아 바뀐 서비스 이미지만 다시 빌드합니다([#11](https://github.com/gasic37200/Calainder/issues/11)). 선택 의존성을 바꾼 v1.5.1은 캐시 없이 다시 빌드해야 반영됩니다([#10](https://github.com/gasic37200/Calainder/issues/10)).

@@ -29,7 +29,7 @@ decision:
 | Teammate | `teammate-web`(Spring Boot) · `teammate-ai-grading`(FastAPI) |
 | feedback-api | 두 서비스가 함께 쓰는 FastAPI, Firestore 저장 |
 
-- **비용.** 무료 범위 안에서 운영한다. OCI의 Always Free 대상인 `VM.Standard.A1.Flex`(ARM)를 골랐고, 4 OCPU·24GB로 늘리려던 요청은 춘천 리전 용량 부족(`Out of host capacity`)으로 계속 실패해 1 OCPU·6GB로 운영했다.
+- **비용.** 무료 범위 안에서 운영한다. OCI의 Always Free 대상인 `VM.Standard.A1.Flex`(ARM)를 골랐고, 4 OCPU·24GB로 늘리려던 요청은 춘천 리전 용량 부족(`Out of host capacity`)으로 계속 실패했고, 이후 무료 한도를 한 서버에 몰지 않고 나눠 쓰기로 해 1 OCPU·6GB로 운영한다.
 - **서버는 한 대, 도메인은 둘.** `calainder.kr`, Teammate 도메인.
 - **비밀값이 많다.** Google OAuth 클라이언트, AES 키, OpenAI 키, Firebase 서비스 계정 파일.
 - **프로젝트마다 이미 Compose가 있다.** 각 저장소에는 그 프로젝트만 띄우는 `docker-compose.yml`이 있다.
