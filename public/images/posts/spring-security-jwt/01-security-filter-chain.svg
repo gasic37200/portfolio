@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 600" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="760" height="600" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">RePlant 요청이 지나는 보안 필터 (주요한 것만)</text>
+
+  <!-- top row: entry -->
+  <rect x="30" y="60" width="160" height="56" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="110" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">DelegatingFilterProxy</text>
+  <text x="110" y="102" text-anchor="middle" font-size="11" fill="#475569">Tomcat에 등록된 필터</text>
+  <path d="M192 88 L222 88" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <rect x="226" y="60" width="160" height="56" rx="10" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="306" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">FilterChainProxy</text>
+  <text x="306" y="102" text-anchor="middle" font-size="11" fill="#475569">스프링 빈, 체인을 고름</text>
+  <path d="M388 88 L418 88" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <rect x="422" y="60" width="308" height="56" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="576" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">SecurityFilterChain</text>
+  <text x="576" y="102" text-anchor="middle" font-size="11" fill="#475569">SecurityConfig의 @Bean이 만든 필터 목록 ↓</text>
+
+  <!-- chain panel -->
+  <rect x="30" y="132" width="700" height="372" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="46" y="154" font-size="12" font-weight="700" fill="#1d4ed8">SecurityFilterChain 안 (위에서 아래로 실행)</text>
+
+  <!-- rows: x=46 w=668, h=40, step 48, start 166 -->
+  <rect x="46" y="166" width="668" height="40" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="62" y="191" font-size="12" font-weight="700" fill="#0f172a">SecurityContextHolderFilter</text>
+  <text x="330" y="191" font-size="11" fill="#475569">빈 보안 정보로 시작하고, 요청이 끝나면 비운다</text>
+
+  <rect x="46" y="214" width="668" height="40" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="62" y="239" font-size="12" font-weight="700" fill="#0f172a">OAuth2 로그인 필터 2개</text>
+  <text x="330" y="239" font-size="11" fill="#475569">/oauth2/authorization/kakao, /login/oauth2/code/kakao 처리</text>
+
+  <rect x="46" y="262" width="668" height="40" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="62" y="287" font-size="12" font-weight="700" fill="#b45309">JwtAuthenticationFilter (팀 코드)</text>
+  <text x="330" y="287" font-size="11" fill="#475569">Bearer 토큰 검증 → Authentication을 SecurityContext에</text>
+
+  <rect x="46" y="310" width="668" height="40" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="62" y="335" font-size="12" font-weight="700" fill="#0f172a">AnonymousAuthenticationFilter</text>
+  <text x="330" y="335" font-size="11" fill="#475569">아직 비어 있으면 '익명 사용자'로 채운다</text>
+
+  <rect x="46" y="358" width="668" height="40" rx="8" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="62" y="383" font-size="12" font-weight="700" fill="#0f172a">ExceptionTranslationFilter</text>
+  <text x="330" y="383" font-size="11" fill="#475569">뒤에서 난 거부 예외 → EntryPoint(401) / AccessDeniedHandler(403)</text>
+
+  <rect x="46" y="406" width="668" height="40" rx="8" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="62" y="431" font-size="12" font-weight="700" fill="#1d4ed8">AuthorizationFilter</text>
+  <text x="330" y="431" font-size="11" fill="#475569">authorizeHttpRequests 규칙 검사 (위에서부터 첫 매칭)</text>
+
+  <text x="62" y="474" font-size="11" fill="#64748b">끈 필터: CsrfFilter · LogoutFilter · UsernamePasswordAuthenticationFilter · BasicAuthenticationFilter</text>
+  <text x="62" y="492" font-size="11" fill="#64748b">(csrf · logout · formLogin · httpBasic을 disable 해서 체인에 들어가지 않는다)</text>
+
+  <path d="M380 506 L380 530" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <rect x="200" y="534" width="360" height="44" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <text x="380" y="561" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">DispatcherServlet → 컨트롤러</text>
+</svg>

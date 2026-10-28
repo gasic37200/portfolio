@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="760" height="470" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">메모리가 가득 찼을 때: 지울까, 거절할까</text>
+
+  <!-- Trigger -->
+  <rect x="230" y="62" width="300" height="54" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="380" y="85" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">새 쓰기 요청이 들어왔다</text>
+  <text x="380" y="104" text-anchor="middle" font-size="11" fill="#475569">그런데 이미 maxmemory에 도달한 상태</text>
+
+  <g stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M330 116 L200 150"/>
+    <path d="M430 116 L560 150"/>
+  </g>
+  <text x="380" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">지워져도 되는 데이터인가?</text>
+
+  <!-- Left: cache -->
+  <rect x="40" y="156" width="320" height="250" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="182" text-anchor="middle" font-size="15" font-weight="700" fill="#1d4ed8">캐시로 쓸 때 → 지운다</text>
+
+  <rect x="60" y="196" width="280" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="200" y="219" text-anchor="middle" font-size="12" fill="#334155">원본은 DB에 따로 있다</text>
+  <text x="200" y="238" text-anchor="middle" font-size="12" fill="#334155">지워지면 DB에서 다시 읽으면 된다</text>
+
+  <path d="M200 252 L200 270" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="60" y="274" width="280" height="56" rx="8" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="297" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">allkeys-lru / allkeys-lfu</text>
+  <text x="200" y="316" text-anchor="middle" font-size="11" fill="#475569">오래 안 쓴 키 · 덜 쓰는 키부터 지움</text>
+
+  <path d="M200 330 L200 348" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="60" y="352" width="280" height="40" rx="8" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="200" y="377" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">쓰기는 성공, 일부 키가 사라짐</text>
+
+  <!-- Right: temp store -->
+  <rect x="400" y="156" width="320" height="250" rx="12" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="560" y="182" text-anchor="middle" font-size="15" font-weight="700" fill="#b91c1c">임시 저장소로 쓸 때 → 거절한다</text>
+
+  <rect x="420" y="196" width="280" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="560" y="219" text-anchor="middle" font-size="12" fill="#334155">인증번호 · Refresh 토큰</text>
+  <text x="560" y="238" text-anchor="middle" font-size="12" fill="#334155">Redis에만 있어서 되살릴 원본이 없다</text>
+
+  <path d="M560 252 L560 270" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="420" y="274" width="280" height="56" rx="8" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="560" y="297" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">noeviction (RePlant 운영)</text>
+  <text x="560" y="316" text-anchor="middle" font-size="11" fill="#475569">아무것도 지우지 않음</text>
+
+  <path d="M560 330 L560 348" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="420" y="352" width="280" height="40" rx="8" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="560" y="377" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">쓰기가 OOM 오류로 실패 (드러남)</text>
+
+  <!-- Cost -->
+  <rect x="400" y="418" width="320" height="36" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="560" y="441" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">대가: 모든 키에 TTL 필수 → 키·TTL 규칙</text>
+  <rect x="40" y="418" width="320" height="36" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <text x="200" y="441" text-anchor="middle" font-size="12" fill="#475569">대가: 사라진 키는 다시 채워야 함 (캐시 미스)</text>
+</svg>

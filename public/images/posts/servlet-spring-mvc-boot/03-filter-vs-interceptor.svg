@@ -66,7 +66,7 @@
 
   <!-- Chain row -->
   <rect x="30" y="388" width="700" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/>
-  <text x="380" y="411" text-anchor="middle" font-size="13" fill="#0f172a">… → <tspan font-weight="700" fill="#b45309">JwtAuthenticationFilter (내 코드)</tspan> → … → <tspan font-weight="700" fill="#1d4ed8">AuthorizationFilter</tspan></text>
+  <text x="380" y="411" text-anchor="middle" font-size="13" fill="#0f172a">… → <tspan font-weight="700" fill="#b45309">JwtAuthenticationFilter (우리 팀 코드)</tspan> → … → <tspan font-weight="700" fill="#1d4ed8">AuthorizationFilter</tspan></text>
   <text x="380" y="432" text-anchor="middle" font-size="11" fill="#475569">JWT 필터가 토큰을 검사해 인증 정보를 채우고, 마지막 AuthorizationFilter가 인가 규칙을 검사한다</text>
 
   <rect x="30" y="460" width="700" height="34" rx="8" fill="#fef3c7"/>

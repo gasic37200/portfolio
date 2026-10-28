@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 540" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <rect width="760" height="540" rx="16" fill="#f8fafc"/>
+  <text x="380" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">인증이 필요한 경로에 요청 하나가 왔을 때, 경우별 흐름</text>
+
+  <!-- column headers: cols x=140,294,448,602 w=146 ; centers 213,367,521,675 -->
+  <rect x="140" y="56" width="146" height="34" rx="8" fill="#059669"/>
+  <text x="213" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">정상 토큰</text>
+  <rect x="294" y="56" width="146" height="34" rx="8" fill="#dc2626"/>
+  <text x="367" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">토큰 없음</text>
+  <rect x="448" y="56" width="146" height="34" rx="8" fill="#dc2626"/>
+  <text x="521" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">만료 · 위조</text>
+  <rect x="602" y="56" width="146" height="34" rx="8" fill="#d97706"/>
+  <text x="675" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">권한 부족</text>
+
+  <!-- row labels -->
+  <g font-size="12" font-weight="700" fill="#334155">
+    <text x="20" y="128">들어온 요청</text>
+    <text x="20" y="196">JwtAuthentication</text>
+    <text x="20" y="212">Filter</text>
+    <text x="20" y="272">SecurityContext</text>
+    <text x="20" y="340">AuthorizationFilter</text>
+    <text x="20" y="408">누가 응답하나</text>
+    <text x="20" y="476">응답</text>
+  </g>
+
+  <!-- row 1: request y=100 h=56 -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="140" y="100" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="213" y="124">Bearer 유효한</text><text x="213" y="141">Access 토큰</text>
+    <rect x="294" y="100" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="367" y="124">Authorization</text><text x="367" y="141">헤더가 없음</text>
+    <rect x="448" y="100" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="521" y="124">exp가 지났거나</text><text x="521" y="141">서명이 안 맞음</text>
+    <rect x="602" y="100" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="675" y="124">MEMBER 토큰으로</text><text x="675" y="141">/api/v1/admin/**</text>
+  </g>
+
+  <!-- row 2: jwt filter y=168 -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="140" y="168" width="146" height="56" rx="8" fill="#fffbeb" stroke="#d97706"/>
+    <text x="213" y="192">검증 성공 →</text><text x="213" y="209">Authentication 저장</text>
+    <rect x="294" y="168" width="146" height="56" rx="8" fill="#fffbeb" stroke="#d97706"/>
+    <text x="367" y="192">할 일 없음</text><text x="367" y="209">그냥 다음 필터로</text>
+    <rect x="448" y="168" width="146" height="56" rx="8" fill="#fffbeb" stroke="#d97706"/>
+    <text x="521" y="192">TokenException →</text><text x="521" y="209">jwt.error 에 이유 기록</text>
+    <rect x="602" y="168" width="146" height="56" rx="8" fill="#fffbeb" stroke="#d97706"/>
+    <text x="675" y="192">검증 성공 →</text><text x="675" y="209">Authentication 저장</text>
+  </g>
+
+  <!-- row 3: context y=236 -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="140" y="236" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="213" y="260">AuthMember</text><text x="213" y="277">ROLE_MEMBER</text>
+    <rect x="294" y="236" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="367" y="260">비어 있음 →</text><text x="367" y="277">익명 사용자</text>
+    <rect x="448" y="236" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="521" y="260">비어 있음 →</text><text x="521" y="277">익명 사용자</text>
+    <rect x="602" y="236" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="675" y="260">AuthMember</text><text x="675" y="277">ROLE_MEMBER</text>
+  </g>
+
+  <!-- row 4: authorization y=304 -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="140" y="304" width="146" height="56" rx="8" fill="#ecfdf5" stroke="#059669"/>
+    <text x="213" y="328">authenticated()</text><text x="213" y="345">통과</text>
+    <rect x="294" y="304" width="146" height="56" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="367" y="328">authenticated()</text><text x="367" y="345">거부 → 예외</text>
+    <rect x="448" y="304" width="146" height="56" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="521" y="328">authenticated()</text><text x="521" y="345">거부 → 예외</text>
+    <rect x="602" y="304" width="146" height="56" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="675" y="328">hasRole("ADMIN")</text><text x="675" y="345">거부 → 예외</text>
+  </g>
+
+  <!-- row 5: who responds y=372 -->
+  <g font-size="11" fill="#334155" text-anchor="middle">
+    <rect x="140" y="372" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="213" y="396">컨트롤러 실행</text><text x="213" y="413">@AuthenticationPrincipal</text>
+    <rect x="294" y="372" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="367" y="396">익명이라서</text><text x="367" y="413">EntryPoint</text>
+    <rect x="448" y="372" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="521" y="396">익명이라서</text><text x="521" y="413">EntryPoint</text>
+    <rect x="602" y="372" width="146" height="56" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="675" y="396">로그인은 했으니</text><text x="675" y="413">AccessDeniedHandler</text>
+  </g>
+
+  <!-- row 6: response y=440 -->
+  <g font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="140" y="440" width="146" height="56" rx="8" fill="#059669"/>
+    <text x="213" y="473" fill="#fff">200 OK</text>
+    <rect x="294" y="440" width="146" height="56" rx="8" fill="#dc2626"/>
+    <text x="367" y="464" fill="#fff">401</text><text x="367" y="482" fill="#fff" font-size="11">UNAUTHORIZED</text>
+    <rect x="448" y="440" width="146" height="56" rx="8" fill="#dc2626"/>
+    <text x="521" y="460" fill="#fff">401</text><text x="521" y="476" fill="#fff" font-size="10">TOKEN_EXPIRED</text><text x="521" y="490" fill="#fff" font-size="10">또는 INVALID_TOKEN</text>
+    <rect x="602" y="440" width="146" height="56" rx="8" fill="#d97706"/>
+    <text x="675" y="464" fill="#fff">403</text><text x="675" y="482" fill="#fff" font-size="11">FORBIDDEN</text>
+  </g>
+
+  <text x="380" y="524" text-anchor="middle" font-size="11" fill="#64748b">permitAll 경로라면 토큰이 없거나 만료·위조여도 익명 사용자로 통과한다 (거부 예외가 생기지 않는다)</text>
+</svg>

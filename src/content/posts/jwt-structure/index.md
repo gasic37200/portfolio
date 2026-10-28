@@ -21,6 +21,8 @@ draft: true
 > - 서명은 내용을 숨기지 않는다. **내용이 바뀌지 않았다는 것**만 보장한다.
 > - JWT는 서버가 따로 기억하지 않아서, 한 번 발급하면 **중간에 취소하기 어렵다.** 그래서 Access 토큰은 짧게, Refresh 토큰은 서버 저장소에 두고 쓸 때마다 바꾼다(회전).
 > - 처음에는 "요청마다 서명과 Redis를 같이 확인한다"고 잘못 알았다. 요청마다 저장소를 보면 **결국 세션 방식**이다.
+>
+> 이 글은 JWT 자체를 다룬다. 이 토큰을 Spring Security가 요청마다 어떻게 검사하는지는 [2편: Spring Security에서 JWT 인증이 동작하는 흐름](/posts/spring-security-jwt)에서, Refresh 토큰을 둔 Redis는 [Redis 글](/posts/redis-in-replant)에서 이어집니다.
 
 ## 1. 세션 방식 vs 토큰 방식
 
@@ -268,6 +270,11 @@ SSE와 JWT 인증이 어디서 맞지 않는지는 [JWT로 인증하는 서버�
 - Refresh는 쓸 때마다 새것으로 바꾸고 옛것은 폐기한다(회전).
 - 요청마다 저장소를 보면 그건 **세션 방식**이다. 저장소에는 지울 수 있어야 하는 것만 둔다.
 - `localStorage`는 XSS에 약하고, 쿠키는 CSRF를 챙겨야 한다.
+
+## 다음 글
+
+- [2편: Spring Security에서 JWT 인증이 동작하는 흐름](/posts/spring-security-jwt)
+- [RePlant에서 Redis를 쓴 방법](/posts/redis-in-replant)
 
 ## 참고
 

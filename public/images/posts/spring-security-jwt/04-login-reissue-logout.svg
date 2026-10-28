@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 750" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#475569"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect width="760" height="750" rx="16" fill="#f8fafc"/>
+  <text x="380" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">로그인 · 재발급 · 로그아웃 (RePlant 코드 기준)</text>
+
+  <!-- lifelines -->
+  <g stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4">
+    <path d="M110 92 L110 712"/>
+    <path d="M400 92 L400 712"/>
+    <path d="M670 92 L670 712"/>
+  </g>
+  <rect x="40" y="54" width="140" height="38" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="110" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">브라우저 (프론트)</text>
+  <rect x="300" y="54" width="200" height="38" rx="10" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="400" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">AuthController · 서비스</text>
+  <rect x="610" y="54" width="120" height="38" rx="10" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="670" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Redis</text>
+
+  <!-- phase bands -->
+  <rect x="20" y="104" width="720" height="22" rx="6" fill="#dbeafe"/>
+  <text x="32" y="120" font-size="12" font-weight="700" fill="#1d4ed8">① 로그인</text>
+  <rect x="20" y="318" width="720" height="22" rx="6" fill="#d1fae5"/>
+  <text x="32" y="334" font-size="12" font-weight="700" fill="#047857">② Access 만료 → 재발급 (회전)</text>
+  <rect x="20" y="590" width="720" height="22" rx="6" fill="#fee2e2"/>
+  <text x="32" y="606" font-size="12" font-weight="700" fill="#b91c1c">③ 로그아웃</text>
+
+  <!-- ① login -->
+  <text x="255" y="146" text-anchor="middle" font-size="11" fill="#0f172a">POST /api/v1/auth/login (이메일·비밀번호)</text>
+  <path d="M112 154 L396 154" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <rect x="300" y="166" width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="400" y="182" text-anchor="middle" font-size="11" fill="#1e3a8a">BCrypt로 비밀번호 확인</text>
+  <text x="400" y="198" text-anchor="middle" font-size="11" fill="#1e3a8a">Access 토큰(JWT, 30분) 생성</text>
+
+  <text x="535" y="226" text-anchor="middle" font-size="11" fill="#0f172a">SET auth:refresh:{해시} → memberId</text>
+  <path d="M402 234 L666 234" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <text x="535" y="250" text-anchor="middle" font-size="10" fill="#64748b">TTL 1일 · 토큰 원문이 아니라 SHA-256 해시</text>
+
+  <text x="255" y="270" text-anchor="middle" font-size="11" fill="#0f172a">Body: accessToken · Set-Cookie: refreshToken</text>
+  <path d="M398 278 L114 278" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#k)"/>
+  <text x="255" y="294" text-anchor="middle" font-size="10" fill="#64748b">HttpOnly · SameSite=Lax</text>
+  <text x="255" y="308" text-anchor="middle" font-size="10" fill="#64748b">Path=/api/v1/auth · Max-Age 1일</text>
+
+  <!-- ② reissue -->
+  <text x="255" y="362" text-anchor="middle" font-size="11" fill="#0f172a">POST /api/v1/auth/reissue</text>
+  <path d="M112 370 L396 370" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <text x="255" y="386" text-anchor="middle" font-size="10" fill="#64748b">refreshToken 쿠키가 자동으로 실림</text>
+
+  <text x="535" y="404" text-anchor="middle" font-size="11" fill="#0f172a">GETDEL auth:refresh:{해시}</text>
+  <path d="M402 412 L666 412" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+  <text x="535" y="428" text-anchor="middle" font-size="10" fill="#64748b">꺼내면서 지운다 (한 번만 성공)</text>
+
+  <text x="535" y="450" text-anchor="middle" font-size="11" fill="#0f172a">memberId</text>
+  <path d="M668 458 L404 458" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#k)"/>
+  <text x="535" y="474" text-anchor="middle" font-size="10" fill="#dc2626">없으면 401 INVALID_REFRESH_TOKEN</text>
+
+  <rect x="300" y="486" width="200" height="40" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="400" y="502" text-anchor="middle" font-size="11" fill="#1e3a8a">DB에서 role 다시 조회</text>
+  <text x="400" y="518" text-anchor="middle" font-size="11" fill="#1e3a8a">새 Access + 새 Refresh 발급</text>
+
+  <text x="535" y="544" text-anchor="middle" font-size="11" fill="#0f172a">SET 새 해시 → memberId, TTL 1일</text>
+  <path d="M402 552 L666 552" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <text x="255" y="568" text-anchor="middle" font-size="11" fill="#0f172a">새 accessToken + 새 refreshToken 쿠키</text>
+  <path d="M398 576 L114 576" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#k)"/>
+
+  <!-- ③ logout -->
+  <text x="255" y="634" text-anchor="middle" font-size="11" fill="#0f172a">POST /api/v1/auth/logout</text>
+  <path d="M112 642 L396 642" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <text x="535" y="660" text-anchor="middle" font-size="11" fill="#0f172a">DEL auth:refresh:{해시}</text>
+  <path d="M402 668 L666 668" stroke="#dc2626" stroke-width="1.5" marker-end="url(#r)"/>
+
+  <text x="255" y="686" text-anchor="middle" font-size="11" fill="#0f172a">200 + Max-Age=0 쿠키 (브라우저가 삭제)</text>
+  <path d="M398 694 L114 694" stroke="#475569" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#k)"/>
+
+  <text x="380" y="734" text-anchor="middle" font-size="11" fill="#64748b">로그아웃해도 이미 나간 Access 토큰은 만료(최대 30분)까지 서명 검증을 통과한다</text>
+</svg>

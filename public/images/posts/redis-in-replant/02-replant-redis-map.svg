@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="760" height="560" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">RePlant에서 Redis를 쓴 곳은 세 군데뿐이다</text>
+
+  <g font-size="11" font-weight="700" fill="#64748b">
+    <text x="40" y="70">기능 (호출하는 쪽)</text>
+    <text x="236" y="70">저장소 클래스</text>
+    <text x="466" y="70">키 → TTL</text>
+  </g>
+
+  <!-- Lane 1: email -->
+  <rect x="30" y="80" width="180" height="100" rx="10" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="30" y="80" width="6" height="100" rx="3" fill="#2563eb"/>
+  <text x="50" y="112" font-size="14" font-weight="700" fill="#0f172a">이메일 인증</text>
+  <text x="50" y="134" font-size="11" fill="#475569">발송 · 확인 · 재발송 제한</text>
+  <text x="50" y="152" font-size="11" fill="#475569">회원가입에서 확인 후 삭제</text>
+
+  <rect x="226" y="100" width="220" height="60" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="336" y="126" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">EmailVerification</text>
+  <text x="336" y="144" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">RedisStore</text>
+
+  <rect x="462" y="80" width="268" height="100" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <g font-size="11" fill="#0f172a" font-family="Consolas, 'D2Coding', monospace">
+    <text x="476" y="106">auth:email:{email}</text>
+    <text x="476" y="134">auth:email:verified:{email}</text>
+    <text x="476" y="162">auth:email:cooldown:{email}</text>
+  </g>
+  <g font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="end">
+    <text x="718" y="106">5분</text>
+    <text x="718" y="134">30분</text>
+    <text x="718" y="162">60초</text>
+  </g>
+
+  <!-- Lane 2: refresh -->
+  <rect x="30" y="200" width="180" height="100" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <rect x="30" y="200" width="6" height="100" rx="3" fill="#059669"/>
+  <text x="50" y="232" font-size="14" font-weight="700" fill="#0f172a">Refresh 토큰</text>
+  <text x="50" y="254" font-size="11" fill="#475569">로그인 · 소셜 로그인 저장</text>
+  <text x="50" y="272" font-size="11" fill="#475569">재발급(회전) · 로그아웃</text>
+
+  <rect x="226" y="220" width="220" height="60" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="336" y="246" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">RefreshToken</text>
+  <text x="336" y="264" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">RedisStore</text>
+
+  <rect x="462" y="200" width="268" height="100" rx="8" fill="#ecfdf5" stroke="#059669"/>
+  <g font-size="11" fill="#0f172a" font-family="Consolas, 'D2Coding', monospace">
+    <text x="476" y="238">auth:refresh:{SHA-256 해시}</text>
+  </g>
+  <text x="718" y="238" text-anchor="end" font-size="11" font-weight="700" fill="#047857">1일</text>
+  <text x="476" y="262" font-size="11" fill="#475569">값: 회원 ID · 토큰 원문은 저장 안 함</text>
+  <text x="476" y="280" font-size="11" fill="#475569">재발급 때 GETDEL로 꺼내며 삭제</text>
+
+  <!-- Lane 3: order -->
+  <rect x="30" y="320" width="180" height="100" rx="10" fill="#fff" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="30" y="320" width="6" height="100" rx="3" fill="#d97706"/>
+  <text x="50" y="352" font-size="14" font-weight="700" fill="#0f172a">주문 결제 대기</text>
+  <text x="50" y="374" font-size="11" fill="#475569">결제 실패 → 대기 표시</text>
+  <text x="50" y="392" font-size="11" fill="#475569">재결제 성공 → 표시 삭제</text>
+
+  <rect x="226" y="340" width="220" height="60" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="336" y="366" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">OrderPayment</text>
+  <text x="336" y="384" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">TtlStore</text>
+
+  <rect x="462" y="320" width="268" height="100" rx="8" fill="#fffbeb" stroke="#d97706"/>
+  <g font-size="11" fill="#0f172a" font-family="Consolas, 'D2Coding', monospace">
+    <text x="476" y="358">order:payment:ttl:{orderId}</text>
+  </g>
+  <text x="718" y="358" text-anchor="end" font-size="11" font-weight="700" fill="#b45309">남은 시간</text>
+  <text x="476" y="382" font-size="11" fill="#475569">생성 시각 + 10분까지, 커밋 뒤에 저장</text>
+  <text x="476" y="400" font-size="11" fill="#475569">만료 처리는 DB 스케줄러가 맡음</text>
+
+  <g stroke="#64748b" stroke-width="1.5" marker-end="url(#a)">
+    <path d="M210 130 L222 130"/>
+    <path d="M446 130 L458 130"/>
+    <path d="M210 250 L222 250"/>
+    <path d="M446 250 L458 250"/>
+    <path d="M210 370 L222 370"/>
+    <path d="M446 370 L458 370"/>
+  </g>
+
+  <!-- Not in Redis -->
+  <rect x="30" y="440" width="700" height="104" rx="12" fill="none" stroke="#94a3b8" stroke-dasharray="6 4"/>
+  <rect x="44" y="432" width="150" height="16" fill="#f8fafc"/>
+  <text x="50" y="444" font-size="12" font-weight="700" fill="#475569">Redis에 두지 않은 것</text>
+  <g font-size="12" fill="#334155">
+    <text x="50" y="476"><tspan font-weight="700" fill="#0f172a">Access 토큰 검사</tspan> → 서명만 확인</text>
+    <text x="50" y="500"><tspan font-weight="700" fill="#0f172a">소셜 로그인 state</tspan> → 서명된 쿠키</text>
+    <text x="50" y="524"><tspan font-weight="700" fill="#0f172a">소셜 가입 토큰</tspan> → JWT (10분)</text>
+    <text x="400" y="476"><tspan font-weight="700" fill="#0f172a">주문서 진입 잠금</tspan> → 기각, 결제 시점 DB 예약</text>
+    <text x="400" y="500"><tspan font-weight="700" fill="#0f172a">중복 요청 키 idem:*</tspan> → 계획만, 미구현</text>
+  </g>
+</svg>
