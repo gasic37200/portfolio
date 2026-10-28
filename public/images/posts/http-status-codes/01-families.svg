@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <rect width="760" height="420" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">HTTP 상태 코드 다섯 가족: 첫 자리만 봐도 절반은 안다</text>
+
+  <!-- 1xx -->
+  <rect x="40" y="62" width="680" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="56" y="73" width="72" height="32" rx="8" fill="#64748b"/>
+  <text x="92" y="95" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">1xx</text>
+  <text x="146" y="86" font-size="14" font-weight="700" fill="#0f172a">정보</text>
+  <text x="146" y="105" font-size="12" fill="#64748b">요청을 받았고, 아직 처리 중이다</text>
+  <text x="410" y="95" font-size="12" fill="#334155">100 Continue · 101 Switching Protocols</text>
+
+  <!-- 2xx -->
+  <rect x="40" y="126" width="680" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="56" y="137" width="72" height="32" rx="8" fill="#059669"/>
+  <text x="92" y="159" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">2xx</text>
+  <text x="146" y="150" font-size="14" font-weight="700" fill="#0f172a">성공</text>
+  <text x="146" y="169" font-size="12" fill="#64748b">요청을 제대로 처리했다</text>
+  <text x="410" y="159" font-size="12" fill="#334155">200 OK · 201 Created · 204 No Content</text>
+
+  <!-- 3xx -->
+  <rect x="40" y="190" width="680" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="56" y="201" width="72" height="32" rx="8" fill="#2563eb"/>
+  <text x="92" y="223" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">3xx</text>
+  <text x="146" y="214" font-size="14" font-weight="700" fill="#0f172a">리다이렉션</text>
+  <text x="146" y="233" font-size="12" fill="#64748b">다른 곳으로 가거나, 가진 사본을 써라</text>
+  <text x="410" y="223" font-size="12" fill="#334155">301 · 302 · 304 Not Modified</text>
+
+  <!-- 4xx -->
+  <rect x="40" y="254" width="680" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="56" y="265" width="72" height="32" rx="8" fill="#d97706"/>
+  <text x="92" y="287" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">4xx</text>
+  <text x="146" y="278" font-size="14" font-weight="700" fill="#0f172a">클라이언트 오류</text>
+  <text x="146" y="297" font-size="12" fill="#64748b">요청 쪽에 문제가 있다</text>
+  <text x="410" y="287" font-size="12" fill="#334155">400 · 401 · 403 · 404 · 409 · 422 · 429</text>
+
+  <!-- 5xx -->
+  <rect x="40" y="318" width="680" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="56" y="329" width="72" height="32" rx="8" fill="#dc2626"/>
+  <text x="92" y="351" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">5xx</text>
+  <text x="146" y="342" font-size="14" font-weight="700" fill="#0f172a">서버 오류</text>
+  <text x="146" y="361" font-size="12" fill="#64748b">요청은 받았는데 서버가 처리에 실패했다</text>
+  <text x="410" y="351" font-size="12" fill="#334155">500 · 502 · 503 · 504</text>
+
+  <rect x="40" y="382" width="680" height="28" rx="8" fill="#fef3c7"/>
+  <text x="380" y="401" text-anchor="middle" font-size="12" fill="#92400e">대체로 4xx는 요청을 고쳐야 풀리고, 5xx는 서버가 나아져야 풀린다</text>
+</svg>

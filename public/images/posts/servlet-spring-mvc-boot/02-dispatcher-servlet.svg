@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#2563eb"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect width="760" height="560" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">DispatcherServlet이 요청 하나를 처리하는 순서</text>
+
+  <!-- DispatcherServlet -->
+  <rect x="40" y="70" width="190" height="406" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="135" y="232" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">DispatcherServlet</text>
+  <text x="135" y="254" text-anchor="middle" font-size="11" fill="#475569">프론트 컨트롤러</text>
+  <text x="135" y="272" text-anchor="middle" font-size="11" fill="#475569">필터를 지난 모든 요청이</text>
+  <text x="135" y="288" text-anchor="middle" font-size="11" fill="#475569">여기로 들어온다</text>
+
+  <!-- Arrows from DS -->
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#b)">
+    <path d="M232 94 L286 94"/>
+    <path d="M232 150 L286 150"/>
+    <path d="M232 206 L286 206"/>
+    <path d="M232 260 L286 260"/>
+    <path d="M232 386 L286 386"/>
+  </g>
+  <path d="M232 446 L286 446" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#r)"/>
+
+  <!-- Step 1 -->
+  <rect x="290" y="72" width="430" height="44" rx="10" fill="#fff" stroke="#2563eb"/>
+  <circle cx="310" cy="94" r="10" fill="#2563eb"/><text x="310" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">1</text>
+  <text x="328" y="90" font-size="13" font-weight="700" fill="#0f172a">HandlerMapping</text>
+  <text x="328" y="107" font-size="11" fill="#475569">URL·HTTP 메서드로 담당 컨트롤러 메서드를 찾는다 (@GetMapping 등)</text>
+
+  <!-- Step 2 -->
+  <rect x="290" y="128" width="430" height="44" rx="10" fill="#fff" stroke="#2563eb"/>
+  <circle cx="310" cy="150" r="10" fill="#2563eb"/><text x="310" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2</text>
+  <text x="328" y="146" font-size="13" font-weight="700" fill="#0f172a">인터셉터 preHandle()</text>
+  <text x="328" y="163" font-size="11" fill="#475569">등록된 인터셉터가 있으면 컨트롤러 전에 실행. false면 여기서 멈춘다</text>
+
+  <!-- Step 3 -->
+  <rect x="290" y="184" width="430" height="44" rx="10" fill="#fff" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="310" cy="206" r="10" fill="#2563eb"/><text x="310" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">3</text>
+  <text x="328" y="202" font-size="13" font-weight="700" fill="#0f172a">HandlerAdapter → 내 컨트롤러 호출</text>
+  <text x="328" y="219" font-size="11" fill="#475569">@RequestBody JSON은 HttpMessageConverter가 객체로 바꿔 넘긴다</text>
+  <rect x="660" y="192" width="50" height="18" rx="9" fill="#fef3c7"/>
+  <text x="685" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">내 코드</text>
+
+  <!-- Step 4 header -->
+  <rect x="290" y="244" width="430" height="32" rx="10" fill="#fff" stroke="#2563eb"/>
+  <circle cx="310" cy="260" r="10" fill="#2563eb"/><text x="310" y="264" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">4</text>
+  <text x="328" y="265" font-size="13" font-weight="700" fill="#0f172a">반환값 처리: 무엇을 반환했나에 따라 갈린다</text>
+
+  <path d="M400 278 L400 290" stroke="#2563eb" stroke-width="1.5" marker-end="url(#b)"/>
+  <path d="M610 278 L610 290" stroke="#2563eb" stroke-width="1.5" marker-end="url(#b)"/>
+
+  <!-- Branch: JSON -->
+  <rect x="290" y="292" width="210" height="72" rx="10" fill="#ecfdf5" stroke="#059669"/>
+  <text x="395" y="312" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">@RestController · @ResponseBody</text>
+  <text x="395" y="330" text-anchor="middle" font-size="11" fill="#334155">HttpMessageConverter (Jackson)</text>
+  <text x="395" y="350" text-anchor="middle" font-size="11" fill="#334155">→ 객체를 JSON으로 바디에 씀</text>
+
+  <!-- Branch: View -->
+  <rect x="510" y="292" width="210" height="72" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <text x="615" y="312" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">뷰 이름 반환 (@Controller)</text>
+  <text x="615" y="330" text-anchor="middle" font-size="11" fill="#334155">ViewResolver → View</text>
+  <text x="615" y="350" text-anchor="middle" font-size="11" fill="#334155">→ HTML 템플릿 렌더링</text>
+
+  <!-- Step 5 -->
+  <rect x="290" y="376" width="430" height="44" rx="10" fill="#fff" stroke="#2563eb"/>
+  <circle cx="310" cy="398" r="10" fill="#2563eb"/><text x="310" y="402" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">5</text>
+  <text x="328" y="394" font-size="13" font-weight="700" fill="#0f172a">인터셉터 postHandle() · afterCompletion()</text>
+  <text x="328" y="411" font-size="11" fill="#475569">afterCompletion은 예외가 나도 마지막에 불린다</text>
+
+  <!-- Exception -->
+  <rect x="290" y="430" width="430" height="46" rx="10" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="306" y="449" font-size="13" font-weight="700" fill="#991b1b">예외가 나면 → HandlerExceptionResolver</text>
+  <text x="306" y="467" font-size="11" fill="#7f1d1d">@ControllerAdvice의 @ExceptionHandler가 에러 응답을 만든다</text>
+  <rect x="660" y="438" width="50" height="18" rx="9" fill="#fef3c7"/>
+  <text x="685" y="451" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">내 코드</text>
+
+  <!-- Legend / note -->
+  <g font-size="12" fill="#334155">
+    <rect x="40" y="496" width="12" height="12" rx="3" fill="#2563eb"/><text x="58" y="507">스프링 부품</text>
+    <rect x="150" y="496" width="12" height="12" rx="3" fill="#d97706"/><text x="168" y="507">내 코드가 들어가는 곳</text>
+  </g>
+  <rect x="40" y="520" width="680" height="28" rx="8" fill="#fef3c7"/>
+  <text x="380" y="538" text-anchor="middle" font-size="12" fill="#92400e">REST API 서버는 대부분 왼쪽 길(HttpMessageConverter → JSON)로 응답한다</text>
+</svg>

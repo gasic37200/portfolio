@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 450" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="760" height="450" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">서버가 로그인 상태를 기억하는가</text>
+
+  <!-- ===== Session ===== -->
+  <rect x="30" y="60" width="340" height="370" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="200" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">세션 방식 (stateful)</text>
+  <text x="200" y="112" text-anchor="middle" font-size="12" fill="#64748b">서버가 "누가 로그인했는지" 기억한다</text>
+
+  <rect x="60" y="130" width="180" height="36" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="150" y="153" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">브라우저</text>
+  <path d="M150 166 L150 206" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+  <text x="162" y="191" font-size="11" fill="#334155">쿠키 <tspan font-family="Consolas, 'D2Coding', monospace">sid=abc123</tspan></text>
+
+  <rect x="60" y="208" width="180" height="36" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="150" y="231" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">서버</text>
+  <path d="M150 244 L150 284" stroke="#2563eb" stroke-width="2" marker-end="url(#s)"/>
+  <text x="162" y="269" font-size="11" fill="#1e3a8a">요청마다 sid로 조회</text>
+
+  <rect x="60" y="286" width="180" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="150" y="306" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">세션 저장소</text>
+  <text x="150" y="324" text-anchor="middle" font-size="11" fill="#1e3a8a"><tspan font-family="Consolas, 'D2Coding', monospace">abc123</tspan> → 회원 42</text>
+
+  <text x="50" y="372" font-size="12" fill="#065f46">+ 서버가 세션을 지우면 바로 로그아웃</text>
+  <text x="50" y="398" font-size="12" fill="#991b1b">− 요청마다 저장소 조회, 서버 여러 대면 공유 필요</text>
+
+  <!-- ===== Token ===== -->
+  <rect x="390" y="60" width="340" height="370" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="560" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">토큰 방식 (stateless)</text>
+  <text x="560" y="112" text-anchor="middle" font-size="12" fill="#64748b">토큰 자체가 "누구인지"를 들고 다닌다</text>
+
+  <rect x="420" y="130" width="180" height="36" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="510" y="153" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">브라우저</text>
+  <path d="M510 166 L510 206" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+  <text x="522" y="191" font-size="11" fill="#334155"><tspan font-family="Consolas, 'D2Coding', monospace">Bearer eyJhbGci…</tspan></text>
+
+  <rect x="420" y="208" width="180" height="36" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="510" y="231" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">서버</text>
+  <path d="M510 244 L510 284" stroke="#059669" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="522" y="269" font-size="11" fill="#065f46">서명·exp만 계산해서 확인</text>
+
+  <rect x="420" y="286" width="180" height="48" rx="8" fill="#fff" stroke="#94a3b8" stroke-dasharray="5 4"/>
+  <text x="510" y="306" text-anchor="middle" font-size="13" font-weight="700" fill="#94a3b8">저장소 조회 없음</text>
+  <text x="510" y="324" text-anchor="middle" font-size="11" fill="#94a3b8">비밀 키만 있으면 검증 끝</text>
+
+  <text x="410" y="372" font-size="12" fill="#065f46">+ 저장소 없이 검증, 서버를 늘리기 쉽다</text>
+  <text x="410" y="398" font-size="12" fill="#991b1b">− 발급한 토큰을 만료 전에 취소하기 어렵다</text>
+</svg>

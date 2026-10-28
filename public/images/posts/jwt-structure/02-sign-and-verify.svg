@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 480" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#059669"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect width="760" height="480" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">HS256: 같은 비밀 키로 서명하고, 같은 키로 다시 계산해 비교한다</text>
+
+  <!-- ===== Left panel: issue ===== -->
+  <rect x="30" y="62" width="340" height="344" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="200" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">① 발급: 로그인에 성공하면</text>
+
+  <rect x="50" y="108" width="170" height="34" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="135" y="130" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="13"><tspan fill="#d97706">header</tspan><tspan fill="#0f172a">.</tspan><tspan fill="#2563eb">payload</tspan></text>
+  <rect x="235" y="108" width="115" height="34" rx="17" fill="#fef3c7" stroke="#d97706"/>
+  <text x="292" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">비밀 키</text>
+
+  <path d="M135 142 L175 168" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+  <path d="M292 142 L240 168" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="110" y="170" width="180" height="36" rx="8" fill="#fff" stroke="#0f172a"/>
+  <text x="200" y="193" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">HMAC-SHA256 계산</text>
+
+  <path d="M200 206 L200 230" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="110" y="232" width="180" height="34" rx="8" fill="#d1fae5" stroke="#059669"/>
+  <text x="200" y="254" text-anchor="middle" font-size="13" font-weight="700" fill="#065f46">signature (서명)</text>
+
+  <path d="M200 266 L200 290" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="50" y="292" width="300" height="38" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="200" y="316" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="13"><tspan fill="#d97706">header</tspan><tspan fill="#0f172a">.</tspan><tspan fill="#2563eb">payload</tspan><tspan fill="#0f172a">.</tspan><tspan fill="#059669">signature</tspan></text>
+  <text x="200" y="356" text-anchor="middle" font-size="12" fill="#334155">세 부분을 이어 붙여 클라이언트에 준다</text>
+  <text x="200" y="378" text-anchor="middle" font-size="11" fill="#64748b">서버는 이 토큰을 따로 저장하지 않는다</text>
+
+  <!-- ===== Right panel: verify ===== -->
+  <rect x="390" y="62" width="340" height="344" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <text x="560" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">② 검증: 요청이 올 때마다</text>
+
+  <rect x="410" y="108" width="300" height="34" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="560" y="130" text-anchor="middle" font-size="12"><tspan fill="#334155">받은 토큰  </tspan><tspan font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#d97706">header</tspan><tspan font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#0f172a">.</tspan><tspan font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#2563eb">payload</tspan><tspan font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#0f172a">.</tspan><tspan font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#059669">signature</tspan></text>
+
+  <path d="M500 142 L500 168" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+  <path d="M665 142 L665 168" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="410" y="170" width="190" height="36" rx="8" fill="#fff" stroke="#0f172a"/>
+  <text x="505" y="187" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">header.payload + 비밀 키</text>
+  <text x="505" y="201" text-anchor="middle" font-size="10" fill="#64748b">HMAC-SHA256 다시 계산</text>
+
+  <rect x="620" y="170" width="90" height="36" rx="8" fill="#d1fae5" stroke="#059669"/>
+  <text x="665" y="193" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">받은 서명</text>
+
+  <path d="M505 206 L505 230" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="410" y="232" width="190" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="505" y="254" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">다시 계산한 서명</text>
+
+  <path d="M505 266 L505 290" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+  <path d="M665 206 L665 290" stroke="#64748b" stroke-width="2" marker-end="url(#s)"/>
+
+  <rect x="410" y="292" width="300" height="38" rx="8" fill="#fff" stroke="#0f172a"/>
+  <text x="560" y="316" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">두 서명이 똑같은가?</text>
+
+  <path d="M485 330 L485 352" stroke="#059669" stroke-width="2" marker-end="url(#g)"/>
+  <path d="M635 330 L635 352" stroke="#dc2626" stroke-width="2" marker-end="url(#r)"/>
+
+  <rect x="410" y="354" width="145" height="36" rx="18" fill="#d1fae5"/>
+  <text x="482" y="376" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">같다 → exp 등 검사</text>
+  <rect x="565" y="354" width="145" height="36" rx="18" fill="#fee2e2"/>
+  <text x="637" y="376" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b">다르다 → 401 거절</text>
+
+  <!-- Bottom note -->
+  <rect x="30" y="420" width="700" height="48" rx="8" fill="#fef3c7"/>
+  <text x="380" y="440" text-anchor="middle" font-size="12" fill="#92400e">서명은 내용을 숨기지 않는다. payload를 한 글자만 바꿔도 서명이 맞지 않아 위조를 알아챈다.</text>
+  <text x="380" y="458" text-anchor="middle" font-size="12" fill="#92400e">HS256은 발급과 검증에 같은 키를 쓰므로, 키가 새면 누구나 진짜 같은 토큰을 만들 수 있다.</text>
+</svg>

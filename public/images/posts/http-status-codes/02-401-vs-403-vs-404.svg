@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="760" height="400" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">헷갈리는 세 코드: 401 · 403 · 404</text>
+
+  <!-- 401 -->
+  <rect x="40" y="62" width="210" height="256" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="40" y="62" width="210" height="6" rx="3" fill="#d97706"/>
+  <text x="145" y="106" text-anchor="middle" font-size="30" font-weight="700" fill="#d97706">401</text>
+  <text x="145" y="126" text-anchor="middle" font-size="12" fill="#64748b">Unauthorized</text>
+  <text x="145" y="160" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">"누구신지 모르겠어요"</text>
+  <text x="145" y="184" text-anchor="middle" font-size="12" fill="#334155">토큰·키가 없거나 틀리거나 만료</text>
+  <text x="145" y="204" text-anchor="middle" font-size="12" fill="#334155">이름과 달리 "권한"이 아니다</text>
+  <text x="145" y="224" text-anchor="middle" font-size="12" fill="#059669">제대로 로그인하면 풀린다</text>
+  <rect x="56" y="248" width="178" height="52" rx="8" fill="#f1f5f9"/>
+  <text x="145" y="268" text-anchor="middle" font-size="11" fill="#475569">RePlant 예</text>
+  <text x="145" y="287" text-anchor="middle" font-size="12" fill="#0f172a">웹훅 X-Api-Key 틀림·없음</text>
+
+  <!-- 403 -->
+  <rect x="275" y="62" width="210" height="256" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="275" y="62" width="210" height="6" rx="3" fill="#dc2626"/>
+  <text x="380" y="106" text-anchor="middle" font-size="30" font-weight="700" fill="#dc2626">403</text>
+  <text x="380" y="126" text-anchor="middle" font-size="12" fill="#64748b">Forbidden</text>
+  <text x="380" y="160" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">"누군지 알지만 안 돼요"</text>
+  <text x="380" y="184" text-anchor="middle" font-size="12" fill="#334155">인가 실패: 로그인은 됐다</text>
+  <text x="380" y="204" text-anchor="middle" font-size="12" fill="#334155">그 일을 할 권한이 없다</text>
+  <text x="380" y="224" text-anchor="middle" font-size="12" fill="#dc2626">다시 로그인해도 그대로다</text>
+  <rect x="291" y="248" width="178" height="52" rx="8" fill="#f1f5f9"/>
+  <text x="380" y="268" text-anchor="middle" font-size="11" fill="#475569">흔한 예</text>
+  <text x="380" y="287" text-anchor="middle" font-size="12" fill="#0f172a">일반 회원이 관리자 API 호출</text>
+
+  <!-- 404 -->
+  <rect x="510" y="62" width="210" height="256" rx="12" fill="#fff" stroke="#cbd5e1"/>
+  <rect x="510" y="62" width="210" height="6" rx="3" fill="#2563eb"/>
+  <text x="615" y="106" text-anchor="middle" font-size="30" font-weight="700" fill="#2563eb">404</text>
+  <text x="615" y="126" text-anchor="middle" font-size="12" fill="#64748b">Not Found</text>
+  <text x="615" y="160" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">"그런 건 없어요"</text>
+  <text x="615" y="184" text-anchor="middle" font-size="12" fill="#334155">없는 id, 없는 경로</text>
+  <text x="615" y="204" text-anchor="middle" font-size="12" fill="#334155">남의 것이면 존재 자체를 숨김</text>
+  <text x="615" y="224" text-anchor="middle" font-size="12" fill="#2563eb">RFC 9110도 허용하는 방식</text>
+  <rect x="526" y="248" width="178" height="52" rx="8" fill="#f1f5f9"/>
+  <text x="615" y="268" text-anchor="middle" font-size="11" fill="#475569">RePlant 예</text>
+  <text x="615" y="287" text-anchor="middle" font-size="12" fill="#0f172a">남의 알림 읽음 처리 요청</text>
+
+  <!-- order -->
+  <g font-size="13" font-weight="700" fill="#0f172a">
+    <rect x="40" y="338" width="210" height="40" rx="20" fill="#fef3c7"/>
+    <text x="145" y="363" text-anchor="middle">① 누구인가? (인증)</text>
+    <rect x="275" y="338" width="210" height="40" rx="20" fill="#fee2e2"/>
+    <text x="380" y="363" text-anchor="middle">② 해도 되나? (인가)</text>
+    <rect x="510" y="338" width="210" height="40" rx="20" fill="#dbeafe"/>
+    <text x="615" y="363" text-anchor="middle">③ 대상이 있나?</text>
+  </g>
+  <path d="M251 358 L272 358" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M486 358 L507 358" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/>
+</svg>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 510" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="760" height="510" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">필터와 인터셉터는 서 있는 층이 다르다</text>
+
+  <!-- Servlet container -->
+  <rect x="30" y="58" width="700" height="174" rx="14" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="46" y="80" font-size="12" font-weight="700" fill="#047857">서블릿 컨테이너 (Tomcat)</text>
+
+  <!-- Filter chain -->
+  <rect x="46" y="94" width="210" height="122" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="151" y="118" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">필터 체인</text>
+  <text x="151" y="140" text-anchor="middle" font-size="11" fill="#475569">jakarta.servlet.Filter</text>
+  <text x="151" y="158" text-anchor="middle" font-size="11" fill="#475569">doFilter(req, res, chain)</text>
+  <text x="151" y="182" text-anchor="middle" font-size="11" fill="#334155">요청·응답 원본만 안다</text>
+  <text x="151" y="200" text-anchor="middle" font-size="11" fill="#334155">어느 컨트롤러로 갈지 모른다</text>
+
+  <path d="M258 155 L286 155" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <!-- DispatcherServlet -->
+  <rect x="290" y="90" width="424" height="130" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="306" y="110" font-size="12" font-weight="700" fill="#1d4ed8">DispatcherServlet (Spring MVC)</text>
+
+  <rect x="306" y="122" width="190" height="86" rx="10" fill="#fff" stroke="#2563eb"/>
+  <text x="401" y="144" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">인터셉터</text>
+  <text x="401" y="164" text-anchor="middle" font-size="11" fill="#475569">HandlerInterceptor</text>
+  <text x="401" y="182" text-anchor="middle" font-size="11" fill="#475569">preHandle · postHandle</text>
+  <text x="401" y="199" text-anchor="middle" font-size="11" fill="#334155">실행될 컨트롤러를 안다</text>
+
+  <path d="M498 165 L520 165" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <rect x="524" y="122" width="174" height="86" rx="10" fill="#fff" stroke="#d97706" stroke-width="1.5"/>
+  <text x="611" y="152" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="611" y="174" text-anchor="middle" font-size="11" fill="#475569">@RestController</text>
+  <text x="611" y="192" text-anchor="middle" font-size="11" fill="#b45309">내 코드</text>
+
+  <!-- Spring Security detail -->
+  <path d="M151 218 L151 290" stroke="#059669" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#k)"/>
+  <text x="166" y="262" font-size="11" fill="#047857">이 중 하나가</text>
+  <text x="470" y="268" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Spring Security = 필터 체인 안에 들어간 필터 묶음</text>
+
+  <rect x="30" y="294" width="220" height="70" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="140" y="316" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">DelegatingFilterProxy</text>
+  <text x="140" y="336" text-anchor="middle" font-size="11" fill="#475569">Tomcat에 등록되는 서블릿 필터</text>
+  <text x="140" y="352" text-anchor="middle" font-size="11" fill="#475569">스프링 빈에게 일을 넘김</text>
+
+  <path d="M252 329 L266 329" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <rect x="270" y="294" width="220" height="70" rx="10" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="380" y="316" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">FilterChainProxy</text>
+  <text x="380" y="336" text-anchor="middle" font-size="11" fill="#475569">스프링 빈</text>
+  <text x="380" y="352" text-anchor="middle" font-size="11" fill="#475569">요청에 맞는 체인을 고름</text>
+
+  <path d="M492 329 L506 329" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <rect x="510" y="294" width="220" height="70" rx="10" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="620" y="316" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">SecurityFilterChain</text>
+  <text x="620" y="336" text-anchor="middle" font-size="11" fill="#475569">보안 필터 목록</text>
+  <text x="620" y="352" text-anchor="middle" font-size="11" fill="#475569">@Bean으로 직접 구성</text>
+
+  <path d="M620 366 L620 384" stroke="#475569" stroke-width="1.5" marker-end="url(#k)"/>
+
+  <!-- Chain row -->
+  <rect x="30" y="388" width="700" height="58" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <text x="380" y="411" text-anchor="middle" font-size="13" fill="#0f172a">… → <tspan font-weight="700" fill="#b45309">JwtAuthenticationFilter (내 코드)</tspan> → … → <tspan font-weight="700" fill="#1d4ed8">AuthorizationFilter</tspan></text>
+  <text x="380" y="432" text-anchor="middle" font-size="11" fill="#475569">JWT 필터가 토큰을 검사해 인증 정보를 채우고, 마지막 AuthorizationFilter가 인가 규칙을 검사한다</text>
+
+  <rect x="30" y="460" width="700" height="34" rx="8" fill="#fef3c7"/>
+  <text x="380" y="482" text-anchor="middle" font-size="12" fill="#92400e">필터는 DispatcherServlet 앞이라 컨트롤러에 닿기 전에 막을 수 있다 · 인터셉터는 어느 컨트롤러가 불릴지 안다</text>
+</svg>

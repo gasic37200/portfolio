@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 530" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <rect width="760" height="530" rx="16" fill="#f8fafc"/>
+  <text x="380" y="38" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">디스패치 타입: 같은 요청이 필터를 다시 지날 때</text>
+
+  <!-- Dispatcher type chips -->
+  <g>
+    <rect x="30" y="58" width="166" height="54" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+    <text x="113" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">REQUEST</text>
+    <text x="113" y="99" text-anchor="middle" font-size="11" fill="#475569">처음 들어온 요청</text>
+
+    <rect x="208" y="58" width="166" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+    <text x="291" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">FORWARD</text>
+    <text x="291" y="99" text-anchor="middle" font-size="11" fill="#475569">서버 안에서 다른 경로로</text>
+
+    <rect x="386" y="58" width="166" height="54" rx="10" fill="#fff" stroke="#cbd5e1"/>
+    <text x="469" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">ERROR</text>
+    <text x="469" y="99" text-anchor="middle" font-size="11" fill="#475569">에러 처리 경로로 (/error)</text>
+
+    <rect x="564" y="58" width="166" height="54" rx="10" fill="#fff" stroke="#d97706" stroke-width="1.5"/>
+    <text x="647" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">ASYNC</text>
+    <text x="647" y="99" text-anchor="middle" font-size="11" fill="#475569">비동기 요청을 마무리할 때</text>
+  </g>
+  <text x="730" y="128" text-anchor="end" font-size="10" fill="#64748b">(INCLUDE도 있다)</text>
+
+  <text x="380" y="156" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SseEmitter를 반환한 요청은 두 번 디스패치된다</text>
+
+  <!-- Column headers -->
+  <rect x="236" y="170" width="240" height="40" rx="8" fill="#ecfdf5" stroke="#059669"/>
+  <text x="356" y="187" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">① 처음 요청 · REQUEST</text>
+  <text x="356" y="202" text-anchor="middle" font-size="10" fill="#475569">구독 요청이 들어올 때</text>
+
+  <rect x="490" y="170" width="240" height="40" rx="8" fill="#fffbeb" stroke="#d97706"/>
+  <text x="610" y="187" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">② 비동기 마무리 · ASYNC</text>
+  <text x="610" y="202" text-anchor="middle" font-size="10" fill="#475569">연결 종료·타임아웃·에러 때</text>
+
+  <!-- Row labels -->
+  <g>
+    <rect x="30" y="218" width="196" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="46" y="239" font-size="13" font-weight="700" fill="#b45309">JWT 필터</text>
+    <text x="46" y="256" font-size="10" fill="#64748b">OncePerRequestFilter 상속</text>
+
+    <rect x="30" y="274" width="196" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="46" y="295" font-size="13" font-weight="700" fill="#1d4ed8">인가 규칙</text>
+    <text x="46" y="312" font-size="10" fill="#64748b">AuthorizationFilter</text>
+
+    <rect x="30" y="330" width="196" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="46" y="351" font-size="13" font-weight="700" fill="#b45309">컨트롤러</text>
+    <text x="46" y="368" font-size="10" fill="#64748b">SseEmitter를 반환</text>
+  </g>
+
+  <!-- Column 1 cells -->
+  <g>
+    <rect x="236" y="218" width="240" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="252" y="239" font-size="12" font-weight="700" fill="#047857">실행</text>
+    <text x="252" y="256" font-size="11" fill="#334155">토큰 검사 → 인증 정보를 채움</text>
+
+    <rect x="236" y="274" width="240" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="252" y="295" font-size="12" font-weight="700" fill="#047857">통과</text>
+    <text x="252" y="312" font-size="11" fill="#334155">인증된 회원이라 허용</text>
+
+    <rect x="236" y="330" width="240" height="50" rx="8" fill="#fff" stroke="#cbd5e1"/>
+    <text x="252" y="351" font-size="12" font-weight="700" fill="#047857">실행</text>
+    <text x="252" y="368" font-size="11" fill="#334155">SseEmitter 반환, 스레드는 풀로</text>
+  </g>
+
+  <!-- Column 2 cells -->
+  <g>
+    <rect x="490" y="218" width="240" height="50" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="506" y="239" font-size="12" font-weight="700" fill="#64748b">건너뜀</text>
+    <text x="506" y="256" font-size="11" fill="#334155">ASYNC 디스패치는 기본값으로 제외</text>
+
+    <rect x="490" y="274" width="240" height="50" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="506" y="295" font-size="12" font-weight="700" fill="#dc2626">다시 검사</text>
+    <text x="506" y="312" font-size="11" fill="#7f1d1d">인증 정보가 비어 있으면 401·403</text>
+
+    <rect x="490" y="330" width="240" height="50" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="506" y="351" font-size="12" font-weight="700" fill="#64748b">다시 부르지 않음</text>
+    <text x="506" y="368" font-size="11" fill="#334155">비동기 결과로 응답만 마무리</text>
+  </g>
+
+  <!-- Between dispatches -->
+  <text x="380" y="404" text-anchor="middle" font-size="11" fill="#475569">①과 ② 사이: 응답은 열려 있고, emitter.send()는 열린 응답에 데이터를 바로 쓴다 (디스패치 아님)</text>
+
+  <!-- Fix -->
+  <rect x="30" y="420" width="700" height="94" rx="10" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="46" y="444" font-size="13" font-weight="700" fill="#047857">RePlant에서 고른 해결</text>
+  <rect x="46" y="454" width="668" height="26" rx="6" fill="#0f172a"/>
+  <text x="58" y="472" font-size="12" fill="#e2e8f0" font-family="'JetBrains Mono', Consolas, monospace">.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()</text>
+  <text x="46" y="500" font-size="11" fill="#334155">ASYNC 디스패치는 밖에서 보낼 수 없고, ①에서 인증을 통과해 열린 연결 안에서만 생긴다. 구독 경로는 그대로 인증 필요.</text>
+</svg>
