@@ -9,8 +9,8 @@ tags:
 - OCI
 projects: ["calainder", "teammate"]
 troubleshooting:
-  problem: "설정 하나만 빠져도 서비스가 뜨지 않았고, 인스턴스 재시작 후에는 도메인 연결이 끊겼다."
-  cause: "Dockerfile, compose, 환경변수, 보안 그룹, Nginx, HTTPS, DNS가 모두 맞물려 있었고, 재시작 시 공인 IP가 바뀌었다."
+  problem: "설정 하나만 빠져도 서비스가 뜨지 않았고, 초기 EC2 환경에서는 인스턴스 재시작 후 도메인 연결이 끊겼다."
+  cause: "Dockerfile, compose, 환경변수, 보안 그룹, Nginx, HTTPS, DNS가 모두 맞물려 있었고, EC2를 중지했다 켜면 공인 IP가 바뀌었다."
   solution: "서비스별 Docker Compose와 .env 분리, 모듈별 .dockerignore 추가, DNS·방화벽·Nginx 리버스 프록시·HTTPS를 직접 구성했다."
   result: "OCI 서버 한 대에서 Calainder, Teammate, feedback-api를 컨테이너로 분리해 운영 중이다."
 ---
@@ -38,10 +38,13 @@ troubleshooting:
 `.gitignore`, Dockerfile, `docker-compose.yml`, 환경변수, 보안 그룹, Nginx, HTTPS, 도메인 연결이 모두 서로 연결되어 있었습니다. 작은 누락이나 경로 문제 하나로도 서비스가 바로 동작하지 않았습니다.
 
 **공인 IP가 바뀌면 도메인도 고쳐야 한다**
-초기 EC2 환경에서 인스턴스를 재시작하자 공인 IP가 바뀌었고, 도메인 A 레코드도 함께 수정해야 했습니다.
+OCI로 옮기기 전 초기 EC2 환경에서 인스턴스를 중지했다 다시 켜자 `calainder.kr`이 `ERR_CONNECTION_TIMED_OUT`으로 열리지 않았습니다. 서버 안(localhost·Docker·Nginx)은 정상이어서 바깥 경로를 보니 공인 IP가 바뀌어 있었고, 도메인 A 레코드를 새 IP로 수정해야 했습니다.
+
+**OCI 서버 용량**
+춘천 리전 A1 Flex를 4 OCPU·24GB로 늘리려 했지만 `Out of host capacity`로 계속 실패해, 1 OCPU·4GB로 먼저 운영했습니다.
 
 **외부 플랫폼은 서비스의 신뢰성까지 본다**
-Calainder의 Google OAuth는 요청하는 권한 범위가 민감해서, 동의 화면 구성, 홈페이지 URL, 개인정보처리방침과 이용약관 링크, 민감 범위 사용 사유, 데모 영상까지 준비해야 했습니다.
+Calainder의 Google OAuth는 요청하는 권한 범위(`calendar.events`)가 민감해서, 동의 화면 구성, 홈페이지 URL, 개인정보처리방침과 이용약관 링크, 민감 범위 사용 사유, 데모 영상까지 준비해 제출했습니다. 검토 중 홈페이지 요구사항 지적을 받아 첫 화면을 고쳤지만, 검증은 반려됐습니다.
 
 ## 배운 점
 
