@@ -114,7 +114,7 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 ## 다른 프로젝트 검토 대기 (2026-10-26)
 
-프로젝트별 양식 검토 보고서가 `.claude/reviews/<slug>.md`에 있다(로컬 전용, git 제외). RePlant는 반영을 마쳤다. **나머지 5개(Calainder, Teammate, 404-express, DDING!, Korea Score Predictor)는 사용자가 SSD에 있는 Codex 로컬 작업 기록을 주면, 그 기록과 검토 보고서를 함께 보고 고친다.** 그 전에는 페이지를 고치지 않는다.
+프로젝트별 양식 검토 보고서가 `.claude/reviews/<slug>.md`에 있다(로컬 전용, git 제외). RePlant는 반영을 마쳤다. **나머지 5개(Calainder, Teammate, 404-express, DDING!, Korea Score Predictor)는 Codex 로컬 작업 기록과 검토 보고서를 함께 보고 고친다.** Codex 기록 위치: `D:/PC_Backup_2026-09-17/05_Codex/Local_State/sessions/YYYY/MM/DD/rollout-*.jsonl` (같은 폴더의 `auth.json`은 열지 않는다). 프로젝트별 세션: Calainder `2026-04-08T23-00-04`(기획~배포·OAuth·v1.x, 53MB), `2026-05-21T20-18-54`, `2026-05-27T19-49-43`(v1.4~1.5.1), `2026-06-12T04-19-55`(REST 경로 정리 → v1.5.2), `2026-05-22T17-26-05`·`2026-06-01T18-28-49`(OCI). Teammate `2026-05-21T20-18-54`, `2026-05-27T19-49-43`. Korea Score Predictor `2026-06-09T16-00-21`, `2026-06-09T16-05-02`. DDING!은 위 세션들에서 노션 정리 대화만. RePlant·404-express는 Codex 기록 없음(Claude로 작업). 그 전에는 페이지를 고치지 않는다.
 
 사용자가 답한 사실 (반영할 때 그대로 쓴다):
 
@@ -122,6 +122,6 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 | --- | --- |
 | 404-express | 운영 EC2에 실제로 배포됐다(저장소 `docs/OPERATIONS.md`의 10-16 "미실행"은 그 뒤에 배포됨). 페이지의 "운영 배포"는 유지 |
 | Calainder | 팀원(커밋 26개)은 Docker 파일을 맡았다. Google OAuth 민감 범위 검증은 데모 영상까지 만들어 제출했지만 **반려됐다**. AI 분석 요청은 비동기가 아니다: 버튼을 누르면 fetch로 순차 처리되는 동기 흐름이고, 당시 비동기로 착각했다(크롤링만 `CompletableFuture` 비동기). 본인 PR #1~#11 링크를 단다 |
-| Teammate | Flutter 앱과 디자인은 다른 팀원이 담당. 422 문제는 사용자가 기억하지 못한다 → Codex 기록에서 실제 해결(저장소는 `uvicorn[standard]` 유지 + `--http h11`, PR #1)을 확인한 뒤 고친다 |
-| DDING! | 게시판은 구현하지 못했다(코드는 있으나 미완성). README의 "문자 API로 피보팅해 완주"는 README가 틀렸다(알림 미구현). 날짜는 2025년으로(커밋 2025-05-15 ~ 06-06). 크롤러 코드는 저장소에 없으면 사용자가 나중에 찾아 준다 |
+| Teammate | Flutter 앱과 디자인은 다른 팀원이 담당. **422 문제 확인됨(Codex 05-27 세션)**: Spring이 보낸 body가 FastAPI에서 `b''`로 받아지고 Uvicorn이 `Unsupported upgrade request`를 냄. 원인은 `uvicorn[standard]`가 함께 설치하는 `httptools` 파서(설치 시점에 따라 버전이 달라짐, Calainder 가상환경엔 httptools 없음). 먼저 `--http h11`로 실행해 확인한 뒤, `uvicorn[standard]` → `uvicorn`으로 바꾸고 `--http h11` 옵션을 뺐다. Calainder는 `release/v1.5.1`(PR #10)로 푸시됨. **Teammate 수정 커밋 `45b72f9`(release/v1.0.1)는 로컬에만 있고 원격에 푸시되지 않음** → 그래서 GitHub 저장소엔 아직 `uvicorn[standard]` + `--http h11`이 남아 있다 |
+| DDING! | 크롤러가 멈춘 이유(Codex 04-08): 학교 학식이 푸드코트 형식으로 바뀌어 학식 정보를 크롤링할 수 없게 됐다. Codex에서 코드 작업은 없고 노션 정리만 했다. 게시판은 구현하지 못했다(코드는 있으나 미완성). README의 "문자 API로 피보팅해 완주"는 README가 틀렸다(알림 미구현). 날짜는 2025년으로(커밋 2025-05-15 ~ 06-06). 크롤러 코드는 저장소에 없으면 사용자가 나중에 찾아 준다 |
 | 공통 | 원인·결과 근거가 부족한 박스는 회고로 옮긴다(후보: Calainder 박스 2·4, Teammate 박스 2, DDING! 박스 2·3, 404-express 박스 1·2, KSP 박스 3) |
