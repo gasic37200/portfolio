@@ -5,14 +5,7 @@ date: "2026-10-15"
 tags:
 - HTTP
 - 백엔드 기초
-draft: true
 ---
-
-<!--
-  ✏️ 임시 글 작성 메모 (사이트에는 보이지 않음)
-  - 그림은 public/images/posts/http-status-codes/ 에 있습니다.
-  - 공개할 때는 frontmatter의 draft: true 줄을 지우세요.
--->
 
 > **한눈에 보기**
 >

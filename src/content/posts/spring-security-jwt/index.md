@@ -6,16 +6,7 @@ tags:
 - Spring Security
 - JWT
 - 백엔드 기초
-draft: true
 ---
-
-<!--
-  임시 글 작성 메모 (사이트에는 보이지 않음)
-  - JWT 시리즈 2편. 1편은 /posts/jwt-structure (JWT 구조·서명·Access/Refresh).
-  - 그림은 public/images/posts/spring-security-jwt/ 에 있습니다.
-  - 코드 기준: 팀 백엔드 develop 브랜치 af39580.
-  - 공개할 때는 frontmatter의 draft: true 줄을 지우세요. 1편보다 먼저 공개하지 않습니다.
--->
 
 > **한눈에 보기**
 >
