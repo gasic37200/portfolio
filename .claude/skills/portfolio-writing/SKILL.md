@@ -97,6 +97,7 @@ description: 김윤관 포트폴리오 사이트(kimyoongwan.vercel.app)의 이�
 
 - 개발 서버(`astro dev`)는 `/projects/404-express`처럼 경로에 `404`가 든 주소를 404 페이지로 가로챈다. 빌드 결과(`dist/`)와 실제 사이트에서는 정상이므로 그 페이지는 배포 후 실제 사이트에서 확인한다.
 - 프로젝트 파일은 `.mdx`다(`<Troubleshooting>` 컴포넌트 사용). 컴포넌트는 `ArticleBottomLayout`에서 주입되므로 import 줄이 필요 없다. 블로그 글은 `.md`.
+- 블로그·기술 기록의 `date`는 글을 쓴 날이 아니라 **그 일을 한 날**로 쓴다. 근거가 되는 PR 병합일(없으면 커밋·작업 기록 날짜)을 쓴다(2026-10-29 사용자 요청).
 - 날짜는 `"YYYY-MM-DD"`로 쓴다. 표시는 한국어(`2026년 5월 31일`), 이력은 `2024.12` 형식으로 자동 변환된다.
 - 사이트 주소(sitemap, RSS, 링크 미리보기)는 `astro.config.mjs`의 기본값. 개인 도메인을 붙이면 Vercel 환경 변수 `SITE_URL`로 바꾼다.
 - 이미지는 `src/assets/`에 두고 `astro:assets`의 `Image`로 쓴다(빌드 시 WebP로 압축). 링크 미리보기 이미지는 `public/open-graph.jpg`(960×480).

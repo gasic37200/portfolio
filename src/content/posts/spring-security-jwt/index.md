@@ -1,7 +1,7 @@
 ---
 title: "Spring Security에서 JWT 인증이 동작하는 흐름"
 summary: "요청 하나가 Spring Security 필터 체인을 지나며 JWT로 인증되고, 401·403이 어디서 만들어지는지 RePlant 코드로 따라갔습니다. 로그인·재발급·로그아웃, 카카오 로그인, SSE 비동기 디스패치까지 정리했습니다."
-date: "2026-10-28"
+date: "2026-10-08"
 tags:
 - Spring Security
 - JWT

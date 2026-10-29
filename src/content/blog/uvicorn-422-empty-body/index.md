@@ -1,7 +1,7 @@
 ---
 title: "FastAPI를 Uvicorn으로 띄우기: h11과 httptools 중 고르기"
 summary: "Spring이 호출하는 FastAPI 모듈은 uvicorn[standard] 대신 uvicorn만 설치해, Uvicorn이 HTTP 파서를 설치 상태에 따라 고르지 않고 항상 h11을 쓰게 했습니다."
-date: "2026-05-31"
+date: "2026-06-01"
 tags:
 - 설계
 - FastAPI

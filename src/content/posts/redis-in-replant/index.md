@@ -1,7 +1,7 @@
 ---
 title: "Redis를 처음부터 다시: TTL, eviction, 영속성, 그리고 RePlant에서 쓴 세 군데"
 summary: "Redis가 왜 빠른지, 메모리가 차면 무엇을 지우는지, 꺼져도 데이터가 남는지를 정리했습니다. 팀 프로젝트 RePlant에서 운영 Redis를 직접 띄우고 키·TTL 규칙을 정하며 내린 결정과, Redis를 쓰지 않기로 한 것들도 함께 적었습니다."
-date: "2026-10-28"
+date: "2026-10-13"
 tags:
 - Redis
 - 인프라

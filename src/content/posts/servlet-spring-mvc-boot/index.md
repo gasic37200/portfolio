@@ -1,7 +1,7 @@
 ---
 title: "서블릿, Spring MVC, Spring Boot는 어디까지가 어디인가"
 summary: "매번 헷갈리던 서블릿, Spring MVC, Spring Boot를 요청 하나가 지나가는 층으로 나눠 정리했습니다. 필터와 인터셉터, 비동기 디스패치까지 RePlant SSE 사례와 함께 봅니다."
-date: "2026-10-28"
+date: "2026-10-08"
 tags:
 - Spring
 - 서블릿

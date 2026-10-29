@@ -1,7 +1,7 @@
 ---
 title: "OCI 무료 서버를 스크립트로 잡아 다섯 달째 운영하기"
 summary: "Oracle Cloud Always Free의 ARM 서버는 재고가 없어 콘솔에서 만들 수 없었습니다. Cloud Shell에서 재시도 스크립트를 돌려 서버를 잡기까지 겪은 일과, 그 서버에서 Calainder·Teammate를 지금까지 운영하며 알게 된 것을 정리했습니다."
-date: "2026-10-28"
+date: "2026-06-01"
 tags:
 - OCI
 - 인프라

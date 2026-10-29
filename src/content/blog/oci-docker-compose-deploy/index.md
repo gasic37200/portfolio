@@ -1,7 +1,7 @@
 ---
 title: "OCI 서버 한 대에 서비스 여러 개를 Docker Compose로 배포하기"
 summary: "Calainder·Teammate·공용 feedback-api를 OCI 무료 ARM 서버 한 대에 올리면서, 프로젝트별 Compose 대신 서버 최상위 Compose 하나로 컨테이너를 모으고, 호스트 Nginx가 도메인별로 나눠 주는 구조를 골랐습니다."
-date: "2026-05-31"
+date: "2026-06-01"
 tags:
 - 배포
 - Docker
